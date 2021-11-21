@@ -19,11 +19,13 @@ void HandleRequest() {
       Serial.println("Failed to get frame from MLX90640.");
       exit(1);
     }
-    float vdd = MLX90640_GetVdd(mlx90640_frame, &mlx90640_params);
     float Ta = MLX90640_GetTa(mlx90640_frame, &mlx90640_params);
     MLX90640_CalculateTo(mlx90640_frame, &mlx90640_params, 0.95, Ta - 8,
                          mlx90640_temperature);
   }
+
+  MLX90640_BadPixelsCorrection(mlx90640_params.brokenPixels,
+                               mlx90640_temperature, 1, &mlx90640_params);
 
   web_server.send(200, "application/octet-stream", (char*)mlx90640_temperature,
                   768 * 4);
