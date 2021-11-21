@@ -958,7 +958,7 @@ void ExtractAlphaParameters(uint16_t *eeData, paramsMLX90640 *mlx90640)
     uint8_t accRowScale;
     uint8_t accColumnScale;
     uint8_t accRemScale;
-    float alphaTemp[768];
+    static float alphaTemp[768];
     float temp;
 
 
@@ -1132,7 +1132,7 @@ void ExtractKtaPixelParameters(uint16_t *eeData, paramsMLX90640 *mlx90640)
     uint8_t ktaScale1;
     uint8_t ktaScale2;
     uint8_t split;
-    float ktaTemp[768];
+    static float ktaTemp[768];
     float temp;
 
     KtaRoCo = (eeData[54] & 0xFF00) >> 8;
@@ -1230,7 +1230,7 @@ void ExtractKvPixelParameters(uint16_t *eeData, paramsMLX90640 *mlx90640)
     int8_t KvReCe;
     uint8_t kvScale;
     uint8_t split;
-    float kvTemp[768];
+    static float kvTemp[768];
     float temp;
 
     KvRoCo = (eeData[52] & 0xF000) >> 12;
