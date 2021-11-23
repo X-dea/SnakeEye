@@ -49,7 +49,8 @@ void setup() {
     exit(1);
   }
 
-  MLX90640_SetRefreshRate(MLX90640_I2C_ADDR, 0x03);
+  MLX90640_SetRefreshRate(MLX90640_I2C_ADDR, 0x05);
+  MLX90640_I2CFreqSet(600);
 
   if (WiFi.waitForConnectResult() != WL_CONNECTED) {
     Serial.println("Failed to connect WiFi.");
