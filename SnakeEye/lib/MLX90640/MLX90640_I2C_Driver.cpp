@@ -18,21 +18,22 @@
 #include "MLX90640_I2C_Driver.h"
 
 #include <Wire.h>
+#include <brzo_i2c.h>
 
 void MLX90640_I2CInit() { Wire.begin(); }
 
 int MLX90640_I2CGeneralReset(void) { return 0; }
 
-int MLX90640_I2CRead(uint8_t slaveAddr, uint16_t startAddress,
-                     uint16_t nMemAddressRead, uint16_t *data) {
-  uint16_t remaining_bytes = nMemAddressRead * 2;
+int MLX90640_I2CRead(uint8_t slave_addr, uint16_t start_addr,
+                     uint16_t num_of_addr, uint16_t *data) {
+  uint16_t remaining_bytes = num_of_addr * 2;
   uint16_t read_bytes = 0;
 
   // Chunked read
   while (remaining_bytes > 0) {
-    Wire.beginTransmission(slaveAddr);
-    Wire.write(startAddress >> 8);
-    Wire.write(startAddress & 0xFF);
+    Wire.beginTransmission(slave_addr);
+    Wire.write(start_addr >> 8);
+    Wire.write(start_addr & 0xFF);
     if (Wire.endTransmission(false) != 0) {
       return -1;
     }
@@ -40,7 +41,7 @@ int MLX90640_I2CRead(uint8_t slaveAddr, uint16_t startAddress,
     uint16_t chunked_bytes =
         remaining_bytes > BUFFER_LENGTH ? BUFFER_LENGTH : remaining_bytes;
 
-    Wire.requestFrom(slaveAddr, chunked_bytes);
+    Wire.requestFrom(slave_addr, chunked_bytes);
     if (Wire.available()) {
       for (uint16_t i = 0; i < chunked_bytes / 2; i++, read_bytes++) {
         data[read_bytes] = Wire.read() << 8;
@@ -49,7 +50,7 @@ int MLX90640_I2CRead(uint8_t slaveAddr, uint16_t startAddress,
     }
 
     remaining_bytes -= chunked_bytes;
-    startAddress += chunked_bytes / 2;
+    start_addr += chunked_bytes / 2;
   }
 
   return 0;
@@ -57,18 +58,18 @@ int MLX90640_I2CRead(uint8_t slaveAddr, uint16_t startAddress,
 
 void MLX90640_I2CFreqSet(int freq) { Wire.setClock(1000U * freq); }
 
-int MLX90640_I2CWrite(uint8_t slaveAddr, uint16_t writeAddress, uint16_t data) {
+int MLX90640_I2CWrite(uint8_t slave_addr, uint16_t write_addr, uint16_t data) {
   // Write
-  Wire.beginTransmission(slaveAddr);
-  Wire.write(writeAddress >> 8);
-  Wire.write(writeAddress & 0xFF);
+  Wire.beginTransmission(slave_addr);
+  Wire.write(write_addr >> 8);
+  Wire.write(write_addr & 0xFF);
   Wire.write(data >> 8);
   Wire.write(data & 0xFF);
   if (Wire.endTransmission() != 0) return -1;
 
   // Check
   uint16_t actual = 0;
-  MLX90640_I2CRead(slaveAddr, writeAddress, 1, &actual);
+  MLX90640_I2CRead(slave_addr, write_addr, 1, &actual);
   if (actual != data) return -2;
 
   return 0;
