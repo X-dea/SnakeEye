@@ -1,6 +1,7 @@
+import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Image;
 import 'package:http/http.dart';
 
 void main() {
@@ -17,20 +18,20 @@ class App extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const ConfigPage(),
+      home: const MainPage(),
     );
   }
 }
 
-class ConfigPage extends StatefulWidget {
-  const ConfigPage({Key? key}) : super(key: key);
+class MainPage extends StatefulWidget {
+  const MainPage({Key? key}) : super(key: key);
 
   @override
-  _ConfigPageState createState() => _ConfigPageState();
+  _MainPageState createState() => _MainPageState();
 }
 
-class _ConfigPageState extends State<ConfigPage> {
-  var _address = "";
+class _MainPageState extends State<MainPage> {
+  var controller = TextEditingController(text: 'http://');
 
   @override
   Widget build(BuildContext context) {
@@ -40,18 +41,21 @@ class _ConfigPageState extends State<ConfigPage> {
       ),
       body: Column(
         children: [
-          TextField(
-            decoration: const InputDecoration(
-              labelText: 'Address',
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              decoration: const InputDecoration(
+                labelText: 'Address',
+              ),
+              controller: controller,
             ),
-            onChanged: (v) => _address = v,
           ),
           ElevatedButton(
             child: const Text('Connect'),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => SensorPage(
-                  address: _address,
+                  address: controller.text,
                 ),
               ),
             ),
@@ -60,6 +64,13 @@ class _ConfigPageState extends State<ConfigPage> {
       ),
     );
   }
+}
+
+class Cell {
+  final double temperature;
+  final Color color;
+
+  const Cell(this.temperature, this.color);
 }
 
 class SensorPage extends StatefulWidget {
@@ -72,15 +83,34 @@ class SensorPage extends StatefulWidget {
 }
 
 class _SensorPageState extends State<SensorPage> {
-  Float32List temps = Float32List(768);
-  List<double> pixels = [];
+  var temps = Float32List(768);
+  var maxTemp = -273.15;
+  var minTemp = -273.15;
+  var diff = 0.0;
+  var cells = <Cell>[];
 
   void refresh() async {
-    var resp = await get(Uri.parse(widget.address));
-    temps = Uint8List.fromList(resp.bodyBytes).buffer.asFloat32List();
-    pixels = temps.map((e) => e / 45).toList();
-    setState(() {});
-    refresh();
+    try {
+      var resp = await get(Uri.parse(widget.address));
+      temps = Uint8List.fromList(resp.bodyBytes).buffer.asFloat32List();
+      maxTemp = temps.reduce(max);
+      minTemp = temps.reduce(min);
+      diff = maxTemp - minTemp;
+
+      cells = temps
+          .map((e) => Cell(
+                e,
+                ColorTween(
+                  begin: Colors.blue,
+                  end: Colors.red,
+                ).lerp((e - minTemp) / max(30, diff))!,
+              ))
+          .toList();
+
+      if (mounted) setState(() {});
+    } finally {
+      refresh();
+    }
   }
 
   @override
@@ -91,22 +121,57 @@ class _SensorPageState extends State<SensorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final sensorArea = LayoutBuilder(
+      builder: (context, constraints) {
+        final pixelExtent = min(
+          (constraints.maxWidth - 16) / 32,
+          (constraints.maxHeight - 16) / 24,
+        );
+
+        return GridView.builder(
+          shrinkWrap: true,
+          padding: EdgeInsets.symmetric(
+            vertical: 8.0,
+            horizontal: max(8, (constraints.maxWidth - (pixelExtent * 32)) / 2),
+          ),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 32,
+            mainAxisExtent: pixelExtent,
+          ),
+          itemCount: cells.length,
+          itemBuilder: (context, i) {
+            final c = cells[i];
+            return Container(
+              width: pixelExtent,
+              height: pixelExtent,
+              decoration: BoxDecoration(
+                color: c.color,
+                border: c.temperature == maxTemp
+                    ? Border.all(color: Colors.yellow, width: 2.0)
+                    : c.temperature == minTemp
+                        ? Border.all(color: Colors.cyanAccent, width: 2.0)
+                        : null,
+              ),
+            );
+          },
+        );
+      },
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sensor'),
       ),
-      body: GridView(
-        gridDelegate:
-            const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 32),
+      body: Column(
         children: [
-          for (var i in pixels)
-            Container(
-              color: ColorTween(
-                begin: Colors.blue,
-                end: Colors.redAccent,
-              ).lerp(i.isNaN ? 0 : i),
-              child: Text((i * 45).toStringAsFixed(2)),
-            )
+          Text(
+            'MAX: ${maxTemp.toStringAsFixed(2)} '
+            'MIN: ${minTemp.toStringAsFixed(2)} '
+            'DIFF: ${diff.toStringAsFixed(2)}',
+          ),
+          Expanded(
+            child: sensorArea,
+          ),
         ],
       ),
     );
