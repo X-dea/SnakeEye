@@ -4,6 +4,13 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart' hide Image;
 import 'package:http/http.dart';
 
+import 'interpolation.dart';
+
+const sensorWidth = 32;
+const sensorHeight = 24;
+const displayWidth = 64;
+const displayHeight = 48;
+
 void main() {
   runApp(const App());
 }
@@ -83,7 +90,7 @@ class SensorPage extends StatefulWidget {
 }
 
 class _SensorPageState extends State<SensorPage> {
-  var temps = Float32List(768);
+  var temps = Float32List(sensorWidth * sensorHeight);
   var maxTemp = -273.15;
   var minTemp = -273.15;
   var diff = 0.0;
@@ -93,6 +100,13 @@ class _SensorPageState extends State<SensorPage> {
     try {
       var resp = await get(Uri.parse(widget.address));
       temps = Uint8List.fromList(resp.bodyBytes).buffer.asFloat32List();
+
+      temps = interpolate(
+        temps,
+        targetWidth: displayWidth,
+        targetHeight: displayHeight,
+      );
+
       maxTemp = temps.reduce(max);
       minTemp = temps.reduce(min);
       diff = maxTemp - minTemp;
@@ -121,24 +135,29 @@ class _SensorPageState extends State<SensorPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (cells.isEmpty) return const Center(child: CircularProgressIndicator());
+
     final sensorArea = LayoutBuilder(
       builder: (context, constraints) {
         final pixelExtent = min(
-          (constraints.maxWidth - 16) / 32,
-          (constraints.maxHeight - 16) / 24,
+          (constraints.maxWidth - 16) / displayWidth,
+          (constraints.maxHeight - 16) / displayHeight,
         );
 
         return GridView.builder(
           shrinkWrap: true,
           padding: EdgeInsets.symmetric(
             vertical: 8.0,
-            horizontal: max(8, (constraints.maxWidth - (pixelExtent * 32)) / 2),
+            horizontal: max(
+              8,
+              (constraints.maxWidth - (pixelExtent * displayWidth)) / 2,
+            ),
           ),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 32,
+            crossAxisCount: displayWidth,
             mainAxisExtent: pixelExtent,
           ),
-          itemCount: cells.length,
+          itemCount: displayWidth * displayHeight,
           itemBuilder: (context, i) {
             final c = cells[i];
             return Container(
@@ -170,7 +189,10 @@ class _SensorPageState extends State<SensorPage> {
             'DIFF: ${diff.toStringAsFixed(2)}',
           ),
           Expanded(
-            child: sensorArea,
+            child: Directionality(
+              textDirection: TextDirection.rtl,
+              child: sensorArea,
+            ),
           ),
         ],
       ),
