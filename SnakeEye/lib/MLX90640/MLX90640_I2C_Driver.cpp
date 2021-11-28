@@ -18,11 +18,10 @@
 #include "MLX90640_I2C_Driver.h"
 
 #include <Wire.h>
-#include <brzo_i2c.h>
 
 void MLX90640_I2CInit() { Wire.begin(); }
 
-int MLX90640_I2CGeneralReset(void) { return 0; }
+int MLX90640_I2CGeneralReset() { return 0; }
 
 int MLX90640_I2CRead(uint8_t slave_addr, uint16_t start_addr,
                      uint16_t num_of_addr, uint16_t *data) {

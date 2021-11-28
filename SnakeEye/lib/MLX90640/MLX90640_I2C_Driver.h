@@ -1,5 +1,6 @@
 /**
  * @copyright (C) 2017 Melexis N.V.
+ * @copyright (C) 2021 Jason C.H.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +15,13 @@
  * limitations under the License.
  *
  */
-#ifndef _MLX90640_I2C_Driver_H_
-#define _MLX90640_I2C_Driver_H_
+#pragma once
 
 #include <stdint.h>
 
-    void MLX90640_I2CInit(void);
-    int MLX90640_I2CGeneralReset(void);
-    int MLX90640_I2CRead(uint8_t slaveAddr,uint16_t startAddress, uint16_t nMemAddressRead, uint16_t *data);
-    int MLX90640_I2CWrite(uint8_t slaveAddr,uint16_t writeAddress, uint16_t data);
-    void MLX90640_I2CFreqSet(int freq);
-#endif
+void MLX90640_I2CInit();
+int MLX90640_I2CGeneralReset();
+int MLX90640_I2CRead(uint8_t slave_addr, uint16_t start_addr,
+                     uint16_t num_of_addr, uint16_t *data);
+int MLX90640_I2CWrite(uint8_t slave_addr, uint16_t write_addr, uint16_t data);
+void MLX90640_I2CFreqSet(int freq);
