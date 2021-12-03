@@ -1,15 +1,15 @@
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart' hide Image;
-import 'package:http/http.dart';
 
 import 'interpolation.dart';
 
 const sensorWidth = 32;
 const sensorHeight = 24;
-const displayWidth = 64;
-const displayHeight = 48;
+var displayWidth = 64;
+var displayHeight = 48;
 
 void main() {
   runApp(const App());
@@ -38,7 +38,8 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  var controller = TextEditingController(text: 'http://');
+  var controller = TextEditingController(text: '');
+  var scale = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -57,15 +58,30 @@ class _MainPageState extends State<MainPage> {
               controller: controller,
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Slider(
+              value: scale.toDouble(),
+              label: scale.toStringAsFixed(0),
+              min: 1,
+              max: 5,
+              divisions: 4,
+              onChanged: (v) => setState(() => scale = v.toInt()),
+            ),
+          ),
           ElevatedButton(
             child: const Text('Connect'),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => SensorPage(
-                  address: controller.text,
+            onPressed: () {
+              displayWidth = sensorWidth * scale;
+              displayHeight = sensorHeight * scale;
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => SensorPage(
+                    address: controller.text,
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -95,11 +111,14 @@ class _SensorPageState extends State<SensorPage> {
   var minTemp = -273.15;
   var diff = 0.0;
   var cells = <Cell>[];
+  Socket? s;
 
   void refresh() async {
-    try {
-      var resp = await get(Uri.parse(widget.address));
-      temps = Uint8List.fromList(resp.bodyBytes).buffer.asFloat32List();
+    s = await Socket.connect(widget.address, 8000);
+
+    await for (var p in s!) {
+      if (p.length != 3072) continue;
+      temps = p.buffer.asFloat32List();
 
       temps = interpolate(
         temps,
@@ -122,8 +141,6 @@ class _SensorPageState extends State<SensorPage> {
           .toList();
 
       if (mounted) setState(() {});
-    } finally {
-      refresh();
     }
   }
 
@@ -131,6 +148,12 @@ class _SensorPageState extends State<SensorPage> {
   void initState() {
     refresh();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    s?.close();
+    super.dispose();
   }
 
   @override
@@ -184,9 +207,9 @@ class _SensorPageState extends State<SensorPage> {
       body: Column(
         children: [
           Text(
-            'MAX: ${maxTemp.toStringAsFixed(2)} '
-            'MIN: ${minTemp.toStringAsFixed(2)} '
-            'DIFF: ${diff.toStringAsFixed(2)}',
+            'MAX: ${maxTemp.toStringAsFixed(2)}°C '
+            'MIN: ${minTemp.toStringAsFixed(2)}°C '
+            'DIFF: ${diff.toStringAsFixed(2)}°C',
           ),
           Expanded(
             child: Directionality(

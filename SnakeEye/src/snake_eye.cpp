@@ -8,16 +8,16 @@
 #include "config.h"
 
 paramsMLX90640 mlx90640_params;
-ESP8266WebServer web_server;
+WiFiServer server(8000);
 
-void HandleRequest() {
+void Send(WiFiClient& client) {
   static float mlx90640_temperature[768];
 
   for (uint8_t i = 0; i < 2; i++) {
     static uint16_t mlx90640_frame[834];
     if (MLX90640_GetFrameData(MLX90640_I2C_ADDR, mlx90640_frame) < 0) {
       Serial.println("Failed to get frame from MLX90640.");
-      exit(1);
+      return;
     }
     float Ta = MLX90640_GetTa(mlx90640_frame, &mlx90640_params);
     MLX90640_CalculateTo(mlx90640_frame, &mlx90640_params, 0.95, Ta - 8,
@@ -27,8 +27,9 @@ void HandleRequest() {
   MLX90640_BadPixelsCorrection(mlx90640_params.brokenPixels,
                                mlx90640_temperature, 1, &mlx90640_params);
 
-  web_server.send(200, "application/octet-stream", (char*)mlx90640_temperature,
-                  768 * 4);
+  if (client.availableForWrite()) {
+    client.write((char*)mlx90640_temperature, 768 * 4);
+  }
 }
 
 void setup() {
@@ -60,8 +61,25 @@ void setup() {
   Serial.print("WiFi connected. IP address: ");
   Serial.println(WiFi.localIP());
 
-  web_server.on("/", HandleRequest);
-  web_server.begin();
+  server.begin();
+  server.setNoDelay(true);
 }
 
-void loop() { web_server.handleClient(); }
+void loop() {
+  static WiFiClient client;
+
+  if (server.hasClient()) {
+    if (!client.connected()) {
+      client.stop();
+      client = server.available();
+      Serial.print("Client connected. IP address: ");
+      Serial.println(client.remoteIP().toString());
+    } else {
+      server.available().stop();
+    }
+  }
+
+  if (client.connected()) {
+    Send(client);
+  }
+}
