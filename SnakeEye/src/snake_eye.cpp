@@ -1,23 +1,23 @@
 
 #include <Arduino.h>
-#include <ESP8266WebServer.h>
 #include <ESP8266WiFi.h>
 #include <MLX90640_API.h>
 #include <MLX90640_I2C_Driver.h>
+#include <WiFiUdp.h>
 
 #include "config.h"
 
 paramsMLX90640 mlx90640_params;
-WiFiServer server(8000);
+WiFiUDP udp;
 
-void Send(WiFiClient& client) {
+bool SendFrame(IPAddress& address) {
   static float mlx90640_temperature[768];
 
   for (uint8_t i = 0; i < 2; i++) {
     static uint16_t mlx90640_frame[834];
     if (MLX90640_GetFrameData(MLX90640_I2C_ADDR, mlx90640_frame) < 0) {
       Serial.println("Failed to get frame from MLX90640.");
-      return;
+      return true;
     }
     float Ta = MLX90640_GetTa(mlx90640_frame, &mlx90640_params);
     MLX90640_CalculateTo(mlx90640_frame, &mlx90640_params, 0.95, Ta - 8,
@@ -27,9 +27,9 @@ void Send(WiFiClient& client) {
   MLX90640_BadPixelsCorrection(mlx90640_params.brokenPixels,
                                mlx90640_temperature, 1, &mlx90640_params);
 
-  if (client.availableForWrite()) {
-    client.write((char*)mlx90640_temperature, 768 * 4);
-  }
+  udp.beginPacket(address, UDP_PORT);
+  udp.write((uint8_t*)mlx90640_temperature, 768 * 4);
+  return udp.endPacket();
 }
 
 void setup() {
@@ -61,25 +61,31 @@ void setup() {
   Serial.print("WiFi connected. IP address: ");
   Serial.println(WiFi.localIP());
 
-  server.begin();
-  server.setNoDelay(true);
+  udp.begin(UDP_PORT);
 }
 
 void loop() {
-  static WiFiClient client;
+  static IPAddress remote_ip;
+  static auto client_attached = false;
 
-  if (server.hasClient()) {
-    if (!client.connected()) {
-      client.stop();
-      client = server.available();
-      Serial.print("Client connected. IP address: ");
-      Serial.println(client.remoteIP().toString());
+  if (udp.parsePacket()) {
+    auto r = udp.read();
+    if (r == 0x0) {
+      client_attached = false;
+      Serial.print("Client detached.");
     } else {
-      server.available().stop();
+      remote_ip = udp.remoteIP();
+      client_attached = true;
+      Serial.print("Client attached. IP address: ");
+      Serial.println(remote_ip);
     }
   }
 
-  if (client.connected()) {
-    Send(client);
+  if (client_attached) {
+    if (SendFrame(remote_ip)) {
+      delay(10);  // Prevent IP fragment loss.
+    } else {
+      client_attached = false;
+    }
   }
 }

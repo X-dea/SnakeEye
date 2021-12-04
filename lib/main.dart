@@ -111,14 +111,22 @@ class _SensorPageState extends State<SensorPage> {
   var minTemp = -273.15;
   var diff = 0.0;
   var cells = <Cell>[];
-  Socket? s;
+  late RawDatagramSocket s;
 
   void refresh() async {
-    s = await Socket.connect(widget.address, 8000);
+    s = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 55544, ttl: 10);
+    s.send([0x1], InternetAddress(widget.address), 55544);
 
-    await for (var p in s!) {
-      if (p.length != 3072) continue;
-      temps = p.buffer.asFloat32List();
+    await for (var p in s) {
+      print(p);
+      if (p != RawSocketEvent.read) continue;
+      final dg = s.receive();
+
+      print(dg?.data.length);
+
+      if (dg == null || dg.data.lengthInBytes != 3072) continue;
+
+      temps = dg.data.buffer.asFloat32List();
 
       temps = interpolate(
         temps,
@@ -152,7 +160,8 @@ class _SensorPageState extends State<SensorPage> {
 
   @override
   void dispose() {
-    s?.close();
+    s.send([0x0], InternetAddress(widget.address), 55544);
+    s.close();
     super.dispose();
   }
 
