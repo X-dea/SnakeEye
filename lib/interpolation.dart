@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-// Use bilinear interpolation to upscale image.
+// Use bilinear interpolation to upscale temperature matrix.
 Float32List interpolate(
   Float32List src, {
   int width = 32,
