@@ -100,7 +100,7 @@ class _UpscaledSensorPageState extends State<UpscaledSensorPage> {
   Widget build(BuildContext context) {
     if (image == null) return const Center(child: CircularProgressIndicator());
 
-    final sensorArea = LayoutBuilder(
+    final body = LayoutBuilder(
       builder: (context, constraints) {
         return CustomPaint(
           painter: ImagePainter(image!),
@@ -114,15 +114,45 @@ class _UpscaledSensorPageState extends State<UpscaledSensorPage> {
         title: const Text('Sensor'),
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            'MAX: ${maxTemp.toStringAsFixed(2)}°C '
-            'MIN: ${minTemp.toStringAsFixed(2)}°C '
-            'DIFF: ${diff.toStringAsFixed(2)}°C',
-          ),
           Expanded(
-            child: sensorArea,
+            child: body,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 70,
+                child: Text(
+                  '${minTemp.toStringAsFixed(2)}°C',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 0, 0, 255),
+                        Color.fromARGB(255, 0, 255, 255),
+                        Color.fromARGB(255, 255, 255, 0),
+                        Color.fromARGB(255, 255, 0, 0),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 170,
+                child: Text(
+                  '${maxTemp.toStringAsFixed(2)}°C '
+                  'Delta: ${diff.toStringAsFixed(2)}°C',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ),
         ],
       ),

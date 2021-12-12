@@ -83,16 +83,19 @@ class _SensorPageState extends State<SensorPage> {
     final sensorArea = LayoutBuilder(
       builder: (context, constraints) {
         final pixelExtent = min(
-          (constraints.maxWidth - 16) / displayWidth,
-          (constraints.maxHeight - 16) / displayHeight,
+          (constraints.maxWidth - 6) / displayWidth,
+          (constraints.maxHeight - 6) / displayHeight,
         );
 
         return GridView.builder(
           shrinkWrap: true,
           padding: EdgeInsets.symmetric(
-            vertical: 8.0,
+            vertical: max(
+              3,
+              (constraints.maxHeight - (pixelExtent * displayHeight)) / 2,
+            ),
             horizontal: max(
-              8,
+              3,
               (constraints.maxWidth - (pixelExtent * displayWidth)) / 2,
             ),
           ),
@@ -128,17 +131,46 @@ class _SensorPageState extends State<SensorPage> {
       ),
       body: Column(
         children: [
-          Text(
-            'MAX: ${maxTemp.toStringAsFixed(2)}°C '
-            'MIN: ${minTemp.toStringAsFixed(2)}°C '
-            'DIFF: ${diff.toStringAsFixed(2)}°C',
-          ),
           Expanded(
             child: Directionality(
               // Flip sensor around y-axis.
               textDirection: TextDirection.rtl,
               child: sensorArea,
             ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 70,
+                child: Text(
+                  '${minTemp.toStringAsFixed(2)}°C',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.blue,
+                        Colors.red,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 170,
+                child: Text(
+                  '${maxTemp.toStringAsFixed(2)}°C '
+                  'Delta: ${diff.toStringAsFixed(2)}°C',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ),
         ],
       ),
