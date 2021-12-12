@@ -6,6 +6,7 @@ const sensorWidth = 32;
 const sensorHeight = 24;
 const sensorResolution = sensorWidth * sensorHeight;
 const ratio = sensorWidth / sensorHeight;
+
 const upscaledWidth = 320;
 const upscaledHeight = 240;
 const upscaledResolution = upscaledWidth * upscaledHeight;

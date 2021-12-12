@@ -63,31 +63,32 @@ class _MainPageState extends State<MainPage> {
               onChanged: (v) => setState(() => scale = v.toInt()),
             ),
           ),
-          ElevatedButton(
-            child: const Text('Connect'),
-            onPressed: () {
-              displayWidth = sensorWidth * scale;
-              displayHeight = sensorHeight * scale;
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => SensorPage(
-                    address: controller.text,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                child: const Text('Connect'),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => SensorPage(
+                      address: controller.text,
+                      scale: scale,
+                    ),
                   ),
                 ),
-              );
-            },
-          ),
-          ElevatedButton(
-            child: const Text('Connect'),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => UpscaledSensorPage(
-                    address: controller.text,
+              ),
+              const VerticalDivider(color: Colors.transparent),
+              ElevatedButton(
+                child: const Text('Connect (OpenCV)'),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => UpscaledSensorPage(
+                      address: controller.text,
+                    ),
                   ),
                 ),
-              );
-            },
+              ),
+            ],
           ),
         ],
       ),
