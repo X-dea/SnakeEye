@@ -6,7 +6,7 @@ import 'upscaled_sensor.dart';
 
 void main() {
   runApp(const App());
-  initFfi();
+  initFFI();
 }
 
 class App extends StatelessWidget {

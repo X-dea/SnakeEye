@@ -17,7 +17,7 @@ final composedImage = malloc.allocate<Uint8>(upscaledResolution * 4);
 late DynamicLibrary lib;
 late void Function(Pointer<Uint8>, Pointer<Uint8>) composeImage;
 
-void initFfi() {
+void initFFI() {
   lib = DynamicLibrary.executable();
   composeImage = lib.lookupFunction<
       Void Function(Pointer<Uint8>, Pointer<Uint8>),

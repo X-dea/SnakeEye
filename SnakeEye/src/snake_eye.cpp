@@ -6,6 +6,8 @@
 #include <WiFiUdp.h>
 
 #include "config.h"
+#include "settings.hpp"
+#include "web.hpp"
 
 paramsMLX90640 mlx90640_params;
 WiFiUDP udp;
@@ -34,34 +36,49 @@ bool SendFrame(IPAddress& address) {
 
 void setup() {
   Serial.begin(115200);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  Settings.Load();
+  if (Settings.version_ != VERSION) {
+    Settings = SnakeEyeSettings();
+    Settings.Save();
+  }
+
+  Serial.printf("Setup WiFi: %s %s\n", Settings.ssid_, Settings.password_);
+  if (Settings.mode_ == Mode::kAP) {
+    WiFi.softAP(Settings.ssid_, Settings.password_);
+  } else {
+    WiFi.begin(Settings.ssid_, Settings.password_);
+  }
 
   MLX90640_I2CInit();
   MLX90640_I2CFreqSet(400);
 
   uint16_t mlx90640_eeprom[832];
   if (MLX90640_DumpEE(MLX90640_I2C_ADDR, mlx90640_eeprom) != 0) {
-    Serial.println("Failed to dump eeprom of MLX90640.");
+    Serial.println(F("Failed to dump eeprom of MLX90640."));
     exit(1);
   }
 
   if (MLX90640_ExtractParameters(mlx90640_eeprom, &mlx90640_params) != 0) {
-    Serial.println("Failed to extract params of MLX90640.");
+    Serial.println(F("Failed to extract params of MLX90640."));
     exit(1);
   }
 
   MLX90640_SetRefreshRate(MLX90640_I2C_ADDR, 0x05);
   MLX90640_I2CFreqSet(600);
 
-  if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("Failed to connect WiFi.");
-    exit(1);
+  if (Settings.mode_ == Mode::kSTA) {
+    if (WiFi.waitForConnectResult() != WL_CONNECTED) {
+      Serial.println(F("Failed to connect WiFi."));
+      exit(1);
+    }
+
+    Serial.print(F("WiFi connected. IP address: "));
+    Serial.println(WiFi.localIP());
   }
 
-  Serial.print("WiFi connected. IP address: ");
-  Serial.println(WiFi.localIP());
-
   udp.begin(UDP_PORT);
+  Web.Setup();
 }
 
 void loop() {
@@ -72,11 +89,11 @@ void loop() {
     auto r = udp.read();
     if (r == 0x0) {
       client_attached = false;
-      Serial.print("Client detached.");
+      Serial.println(F("Client detached."));
     } else {
       remote_ip = udp.remoteIP();
       client_attached = true;
-      Serial.print("Client attached. IP address: ");
+      Serial.print(F("Client attached. IP address: "));
       Serial.println(remote_ip);
     }
   }
@@ -88,4 +105,6 @@ void loop() {
       client_attached = false;
     }
   }
+
+  Web.server_.handleClient();
 }

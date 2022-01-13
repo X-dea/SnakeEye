@@ -37,7 +37,7 @@ int MLX90640_I2CRead(uint8_t slave_addr, uint16_t start_addr,
       return -1;
     }
 
-    uint16_t chunked_bytes =
+    uint8_t chunked_bytes =
         remaining_bytes > BUFFER_LENGTH ? BUFFER_LENGTH : remaining_bytes;
 
     Wire.requestFrom(slave_addr, chunked_bytes);
