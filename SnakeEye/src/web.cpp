@@ -4,12 +4,6 @@
 
 WebController Web;
 
-void WebController::Setup() {
-  server_.begin();
-  server_.on("/ap", [this]() { ChangeToAPMode(); });
-  server_.on("/sta", [this]() { ChangeToSTAMode(); });
-}
-
 bool WebController::Validate() {
   if (!server_.hasArg("ssid") || !server_.hasArg("password") ||
       server_.arg("ssid").length() >= MAX_SSID_LENGTH ||
@@ -55,4 +49,10 @@ void WebController::ChangeToSTAMode() {
 
   server_.send(200);
   ESP.restart();
+}
+
+void WebController::Setup() {
+  server_.begin();
+  server_.on("/ap", [this]() { ChangeToAPMode(); });
+  server_.on("/sta", [this]() { ChangeToSTAMode(); });
 }
