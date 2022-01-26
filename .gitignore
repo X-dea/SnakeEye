@@ -50,4 +50,4 @@ app.*.map.json
 /android/app/release
 
 .vscode
-third_party/opencv
+third_party/opencv-android/*
