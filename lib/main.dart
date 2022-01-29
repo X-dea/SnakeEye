@@ -65,8 +65,10 @@ class _MainPageState extends State<MainPage> {
               onChanged: (v) => setState(() => scale = v.toInt()),
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.spaceEvenly,
+            spacing: 10,
+            runSpacing: 10,
             children: [
               ElevatedButton(
                 child: const Text('Connect'),
@@ -79,7 +81,6 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ),
               ),
-              const VerticalDivider(color: Colors.transparent),
               ElevatedButton(
                 child: const Text('Connect (OpenCV)'),
                 onPressed: () => Navigator.of(context).push(
@@ -90,12 +91,20 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ),
               ),
-              const VerticalDivider(color: Colors.transparent),
               ElevatedButton(
-                child: const Text('Configure'),
+                child: const Text('Configure Wifi'),
                 onPressed: () => showDialog(
                   context: context,
-                  builder: (context) => ConfigurationDialog(
+                  builder: (context) => WifiConfigurationDialog(
+                    address: controller.text,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                child: const Text('Configure Sensor'),
+                onPressed: () => showDialog(
+                  context: context,
+                  builder: (context) => SensorConfigurationDialog(
                     address: controller.text,
                   ),
                 ),
@@ -108,19 +117,20 @@ class _MainPageState extends State<MainPage> {
   }
 }
 
-class ConfigurationDialog extends StatefulWidget {
+class WifiConfigurationDialog extends StatefulWidget {
   final String address;
 
-  const ConfigurationDialog({
+  const WifiConfigurationDialog({
     Key? key,
     required this.address,
   }) : super(key: key);
 
   @override
-  State<ConfigurationDialog> createState() => _ConfigurationDialogState();
+  State<WifiConfigurationDialog> createState() =>
+      _WifiConfigurationDialogState();
 }
 
-class _ConfigurationDialogState extends State<ConfigurationDialog> {
+class _WifiConfigurationDialogState extends State<WifiConfigurationDialog> {
   final formKey = GlobalKey<FormState>();
   var mode = 'ap';
   var ssidController = TextEditingController(text: 'SnakeEye');
@@ -129,7 +139,7 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Configuration'),
+      title: const Text('Wifi Configuration'),
       content: Form(
         key: formKey,
         child: Column(
@@ -183,6 +193,71 @@ class _ConfigurationDialogState extends State<ConfigurationDialog> {
             final uri = Uri.http(widget.address, '/$mode', {
               'ssid': ssidController.text,
               'password': passwordController.text
+            });
+            await get(uri);
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class SensorConfigurationDialog extends StatefulWidget {
+  final String address;
+
+  const SensorConfigurationDialog({
+    Key? key,
+    required this.address,
+  }) : super(key: key);
+
+  @override
+  State<SensorConfigurationDialog> createState() =>
+      _SensorConfigurationDialogState();
+}
+
+class _SensorConfigurationDialogState extends State<SensorConfigurationDialog> {
+  var level = '3';
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Sensor Configuration'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            title: const Text('Refresh Rate'),
+            trailing: DropdownButton<String>(
+              value: level,
+              items: {
+                '1': '1Hz',
+                '2': '2Hz',
+                '3': '4Hz',
+                '4': '8Hz',
+                '5': '16Hz',
+              }
+                  .entries
+                  .map((e) => DropdownMenuItem(
+                        value: e.key,
+                        child: Text(e.value),
+                      ))
+                  .toList(),
+              onChanged: (v) => setState(() => level = v!),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          child: const Text('Cancel'),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        TextButton(
+          child: const Text('Apply'),
+          onPressed: () async {
+            final uri = Uri.http(widget.address, '/rate', {
+              'level': level,
             });
             await get(uri);
             Navigator.of(context).pop();

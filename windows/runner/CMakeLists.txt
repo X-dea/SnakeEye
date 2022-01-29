@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(runner LANGUAGES CXX)
 
-find_package(OpenCV REQUIRED PATHS ../../third_party/opencv/build/x64/vc15/lib)
+find_package(OpenCV REQUIRED PATHS ../../third_party/opencv-windows/build/x64/vc15/lib)
 
 file(GLOB ffi_src
      "../../lib/*.hpp"
