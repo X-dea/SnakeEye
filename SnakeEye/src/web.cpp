@@ -51,8 +51,24 @@ void WebController::ChangeToSTAMode() {
   ESP.restart();
 }
 
+void WebController::SetRefreshRate() {
+  if (!server_.hasArg("level")) {
+    server_.send(400);
+    return;
+  }
+
+  auto refresh_rate_level_ = server_.arg("level").toInt();
+
+  Settings.refresh_rate_level_ = static_cast<uint8_t>(refresh_rate_level_);
+  Settings.Save();
+
+  server_.send(200);
+  ESP.restart();
+}
+
 void WebController::Setup() {
   server_.begin();
   server_.on("/ap", [this]() { ChangeToAPMode(); });
   server_.on("/sta", [this]() { ChangeToSTAMode(); });
+  server_.on("/rate", [this]() { SetRefreshRate(); });
 }

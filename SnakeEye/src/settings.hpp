@@ -13,9 +13,9 @@ class SnakeEyeSettings {
  public:
   uint32_t version_ = VERSION;
   Mode mode_ = Mode::kAP;
-
   char ssid_[MAX_SSID_LENGTH] = DEFAULT_SSID;
   char password_[MAX_PASSWORD_LENGTH] = DEFAULT_PASSWORD;
+  uint8_t refresh_rate_level_ = 0x03;
 
   /**
    * @brief Load settings from EEPROM.

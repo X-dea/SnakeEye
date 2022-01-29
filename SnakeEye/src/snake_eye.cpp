@@ -14,17 +14,16 @@ WiFiUDP udp;
 
 bool SendFrame(IPAddress& address) {
   static float mlx90640_temperature[768];
+  static uint16_t mlx90640_frame[834];
 
-  for (uint8_t i = 0; i < 2; i++) {
-    static uint16_t mlx90640_frame[834];
-    if (MLX90640_GetFrameData(MLX90640_I2C_ADDR, mlx90640_frame) < 0) {
-      Serial.println("Failed to get frame from MLX90640.");
-      return true;
-    }
-    float Ta = MLX90640_GetTa(mlx90640_frame, &mlx90640_params);
-    MLX90640_CalculateTo(mlx90640_frame, &mlx90640_params, 0.95, Ta - 8,
-                         mlx90640_temperature);
+  if (MLX90640_GetFrameData(MLX90640_I2C_ADDR, mlx90640_frame) < 0) {
+    Serial.println("Failed to get frame from MLX90640.");
+    return true;
   }
+
+  MLX90640_CalculateTo(mlx90640_frame, &mlx90640_params, 0.95,
+                       MLX90640_GetTa(mlx90640_frame, &mlx90640_params) - 8,
+                       mlx90640_temperature);
 
   MLX90640_BadPixelsCorrection(mlx90640_params.brokenPixels,
                                mlx90640_temperature, 1, &mlx90640_params);
@@ -64,7 +63,7 @@ void setup() {
     exit(1);
   }
 
-  MLX90640_SetRefreshRate(MLX90640_I2C_ADDR, 0x05);
+  MLX90640_SetRefreshRate(MLX90640_I2C_ADDR, Settings.refresh_rate_level_);
   MLX90640_I2CFreqSet(600);
 
   if (Settings.mode_ == Mode::kSTA) {
