@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:ffi/ffi.dart';
 
@@ -18,13 +19,17 @@ late DynamicLibrary lib;
 late void Function(Pointer<Uint8>, Pointer<Uint8>) composeImage;
 
 void initFFI() {
-  lib = DynamicLibrary.executable();
+  if (Platform.isAndroid) {
+    lib = DynamicLibrary.open('libSnakeEye.so');
+  } else {
+    lib = DynamicLibrary.executable();
+  }
   composeImage = lib.lookupFunction<
       Void Function(Pointer<Uint8>, Pointer<Uint8>),
       void Function(Pointer<Uint8>, Pointer<Uint8>)>('ComposeImage');
 
-  lib.lookupFunction<
-      Void Function(Pointer<Void>),
-      void Function(
-          Pointer<Void>)>('InitializeDartApi')(NativeApi.initializeApiDLData);
+  // lib.lookupFunction<
+  //     Void Function(Pointer<Void>),
+  //     void Function(
+  //         Pointer<Void>)>('InitializeDartApi')(NativeApi.initializeApiDLData);
 }
