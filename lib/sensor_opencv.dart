@@ -27,16 +27,16 @@ class ImagePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-class UpscaledSensorPage extends StatefulWidget {
+class OpenCVSensorPage extends StatefulWidget {
   final String address;
 
-  const UpscaledSensorPage({Key? key, required this.address}) : super(key: key);
+  const OpenCVSensorPage({Key? key, required this.address}) : super(key: key);
 
   @override
-  State<UpscaledSensorPage> createState() => _UpscaledSensorPageState();
+  State<OpenCVSensorPage> createState() => _OpenCVSensorPageState();
 }
 
-class _UpscaledSensorPageState extends State<UpscaledSensorPage> {
+class _OpenCVSensorPageState extends State<OpenCVSensorPage> {
   var temps = Float32List(sensorWidth * sensorHeight);
   var maxTemp = -273.15;
   var minTemp = -273.15;
