@@ -100,12 +100,13 @@ void loop() {
 
   if (Serial.available() > 0) {
     auto c = Serial.read();
-    if (c == 0x0) {
+    if (c == 0x0 || c == '0') {
       State.serial_client_attached_ = false;
       if (State.DebugPrint()) Serial.println(F("Serial client detached."));
     } else {
       State.serial_client_attached_ = true;
     }
+    Serial.flush();
   }
 
   if (State.udp_client_attached_ || State.serial_client_attached_) {
@@ -122,7 +123,9 @@ void loop() {
     }
 
     if (State.serial_client_attached_) {
-      if (!Serial.write((uint8_t*)mlx90640_temperature, 768 * 4)) {
+      static const uint8_t terminator[] = {0xFF, 0x0, 0xFF, 0x0};
+      if (!Serial.write((uint8_t*)mlx90640_temperature, 768 * 4) ||
+          !Serial.write(terminator, 4)) {
         State.serial_client_attached_ = false;
       }
     }
