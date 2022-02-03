@@ -9,16 +9,18 @@
 #include "settings.hpp"
 #include "web.hpp"
 
-paramsMLX90640 mlx90640_params;
-WiFiUDP udp;
+static paramsMLX90640 mlx90640_params;
+static WiFiUDP udp;
 
-bool SendFrame(IPAddress& address) {
-  static float mlx90640_temperature[768];
-  static uint16_t mlx90640_frame[834];
+static uint16_t mlx90640_frame[834];
+static float mlx90640_temperature[768];
 
+bool FetchFrame() {
   if (MLX90640_GetFrameData(MLX90640_I2C_ADDR, mlx90640_frame) < 0) {
-    Serial.println("Failed to get frame from MLX90640.");
-    return true;
+    if (State.DebugPrint()) {
+      Serial.println("Failed to get frame from MLX90640.");
+    }
+    return false;
   }
 
   MLX90640_CalculateTo(mlx90640_frame, &mlx90640_params, 0.95,
@@ -28,9 +30,7 @@ bool SendFrame(IPAddress& address) {
   MLX90640_BadPixelsCorrection(mlx90640_params.brokenPixels,
                                mlx90640_temperature, 1, &mlx90640_params);
 
-  udp.beginPacket(address, UDP_PORT);
-  udp.write((uint8_t*)mlx90640_temperature, 768 * 4);
-  return udp.endPacket();
+  return true;
 }
 
 void setup() {
@@ -55,12 +55,12 @@ void setup() {
   uint16_t mlx90640_eeprom[832];
   if (MLX90640_DumpEE(MLX90640_I2C_ADDR, mlx90640_eeprom) != 0) {
     Serial.println(F("Failed to dump eeprom of MLX90640."));
-    exit(1);
+    ESP.restart();
   }
 
   if (MLX90640_ExtractParameters(mlx90640_eeprom, &mlx90640_params) != 0) {
     Serial.println(F("Failed to extract params of MLX90640."));
-    exit(1);
+    ESP.restart();
   }
 
   MLX90640_SetRefreshRate(MLX90640_I2C_ADDR, Settings.refresh_rate_level_);
@@ -69,7 +69,7 @@ void setup() {
   if (Settings.mode_ == Mode::kSTA) {
     if (WiFi.waitForConnectResult() != WL_CONNECTED) {
       Serial.println(F("Failed to connect WiFi."));
-      exit(1);
+      ESP.restart();
     }
 
     Serial.print(F("WiFi connected. IP address: "));
@@ -82,26 +82,49 @@ void setup() {
 
 void loop() {
   static IPAddress remote_ip;
-  static auto client_attached = false;
 
   if (udp.parsePacket()) {
     auto r = udp.read();
     if (r == 0x0) {
-      client_attached = false;
-      Serial.println(F("Client detached."));
+      State.udp_client_attached_ = false;
+      if (State.DebugPrint()) Serial.println(F("UDP client detached."));
     } else {
       remote_ip = udp.remoteIP();
-      client_attached = true;
-      Serial.print(F("Client attached. IP address: "));
-      Serial.println(remote_ip);
+      State.udp_client_attached_ = true;
+      if (State.DebugPrint()) {
+        Serial.print(F("UDP client attached. IP address: "));
+        Serial.println(remote_ip);
+      }
     }
   }
 
-  if (client_attached) {
-    if (SendFrame(remote_ip)) {
-      delay(10);  // Prevent IP fragment loss.
+  if (Serial.available() > 0) {
+    auto c = Serial.read();
+    if (c == 0x0) {
+      State.serial_client_attached_ = false;
+      if (State.DebugPrint()) Serial.println(F("Serial client detached."));
     } else {
-      client_attached = false;
+      State.serial_client_attached_ = true;
+    }
+  }
+
+  if (State.udp_client_attached_ || State.serial_client_attached_) {
+    if (!FetchFrame()) return;
+
+    if (State.udp_client_attached_) {
+      udp.beginPacket(remote_ip, UDP_PORT);
+      udp.write((uint8_t*)mlx90640_temperature, 768 * 4);
+      if (udp.endPacket()) {
+        delay(10);  // Prevent IP fragment loss.
+      } else {
+        State.udp_client_attached_ = false;
+      }
+    }
+
+    if (State.serial_client_attached_) {
+      if (!Serial.write((uint8_t*)mlx90640_temperature, 768 * 4)) {
+        State.serial_client_attached_ = false;
+      }
     }
   }
 

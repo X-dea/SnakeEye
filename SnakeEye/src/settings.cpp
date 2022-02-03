@@ -15,3 +15,5 @@ void SnakeEyeSettings::Save() {
   EEPROM.put(0, Settings);
   EEPROM.end();
 }
+
+SnakeEyeState State;

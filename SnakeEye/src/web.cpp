@@ -21,7 +21,9 @@ void WebController::ChangeToAPMode() {
   auto ssid = server_.arg("ssid").c_str();
   auto password = server_.arg("password").c_str();
 
-  Serial.printf("Changing to AP mode: %s %s\n", ssid, password);
+  if (State.DebugPrint()) {
+    Serial.printf("Changing to AP mode: %s %s\n", ssid, password);
+  }
 
   strcpy(Settings.ssid_, ssid);
   strcpy(Settings.password_, password);
@@ -39,7 +41,9 @@ void WebController::ChangeToSTAMode() {
   auto ssid = server_.arg("ssid").c_str();
   auto password = server_.arg("password").c_str();
 
-  Serial.printf("Changing to STA mode: %s %s\n", ssid, password);
+  if (State.DebugPrint()) {
+    Serial.printf("Changing to STA mode: %s %s\n", ssid, password);
+  }
 
   strcpy(Settings.ssid_, ssid);
   strcpy(Settings.password_, password);

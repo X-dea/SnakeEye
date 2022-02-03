@@ -29,3 +29,12 @@ class SnakeEyeSettings {
 };
 
 extern SnakeEyeSettings Settings;
+
+class SnakeEyeState {
+ public:
+  bool udp_client_attached_ = false;
+  bool serial_client_attached_ = false;
+  inline bool DebugPrint() { return !serial_client_attached_; }
+};
+
+extern SnakeEyeState State;
