@@ -87,7 +87,7 @@ class _MainPageState extends State<MainPage> {
             ListTile(
               title: const Text('Serial Ports'),
               subtitle: const Text('Tap to refresh.'),
-              trailing: DropdownButton(
+              trailing: DropdownButton<int>(
                 items: [
                   for (final device in devices)
                     DropdownMenuItem(

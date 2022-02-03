@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:snake_eye/connection.dart';
 
 import 'common.dart';
 import 'interpolation.dart';
@@ -21,59 +21,40 @@ class SensorPage extends StatefulWidget {
   State<SensorPage> createState() => _SensorPageState();
 }
 
-class _SensorPageState extends State<SensorPage> {
+class _SensorPageState extends State<SensorPage> with ConnectionProcessor {
   final tween = ColorTween(begin: Colors.blue, end: Colors.red);
   late final int displayWidth;
   late final int displayHeight;
 
-  var temps = Float32List(sensorWidth * sensorHeight);
   var maxTemp = -273.15;
   var minTemp = -273.15;
   var diff = 0.0;
 
-  late RawDatagramSocket s;
+  @override
+  String get address => widget.address;
 
-  void refresh() async {
-    s = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 55544);
-    s.send([0x1], InternetAddress(widget.address), 55544);
-
-    await for (var p in s) {
-      if (p != RawSocketEvent.read) continue;
-
-      final dg = s.receive();
-      if (dg == null || dg.data.lengthInBytes != sensorResolution * 4) continue;
-
-      temps = dg.data.buffer.asFloat32List();
-
-      if (displayWidth != sensorWidth || displayHeight != sensorHeight) {
-        temps = interpolate(
-          temps,
-          targetWidth: displayWidth,
-          targetHeight: displayHeight,
-        );
-      }
-
-      maxTemp = temps.reduce(max);
-      minTemp = temps.reduce(min);
-      diff = maxTemp - minTemp;
-
-      if (mounted) setState(() {});
+  @override
+  void processTemperatures(Float32List temps) {
+    if (displayWidth != sensorWidth || displayHeight != sensorHeight) {
+      temps = interpolate(
+        temps,
+        targetWidth: displayWidth,
+        targetHeight: displayHeight,
+      );
     }
+
+    maxTemp = temps.reduce(max);
+    minTemp = temps.reduce(min);
+    diff = maxTemp - minTemp;
+
+    if (mounted) setState(() {});
   }
 
   @override
   void initState() {
     displayWidth = sensorWidth * widget.scale;
     displayHeight = sensorHeight * widget.scale;
-    refresh();
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    s.send([0x0], InternetAddress(widget.address), 55544);
-    s.close();
-    super.dispose();
   }
 
   @override

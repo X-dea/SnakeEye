@@ -1,10 +1,10 @@
 import 'dart:ffi';
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart' hide Image;
+import 'package:snake_eye/connection.dart';
 
 import 'common.dart';
 
@@ -36,64 +36,42 @@ class OpenCVSensorPage extends StatefulWidget {
   State<OpenCVSensorPage> createState() => _OpenCVSensorPageState();
 }
 
-class _OpenCVSensorPageState extends State<OpenCVSensorPage> {
-  var temps = Float32List(sensorWidth * sensorHeight);
+class _OpenCVSensorPageState extends State<OpenCVSensorPage>
+    with ConnectionProcessor {
   var maxTemp = -273.15;
   var minTemp = -273.15;
   var diff = 0.0;
 
-  late RawDatagramSocket socket;
   Image? image;
 
-  void refresh() async {
-    socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 55544);
-    socket.send([0x1], InternetAddress(widget.address), 55544);
-
-    await for (var p in socket) {
-      if (p != RawSocketEvent.read) continue;
-
-      final dg = socket.receive();
-      if (dg == null || dg.data.lengthInBytes != sensorResolution * 4) continue;
-
-      temps = dg.data.buffer.asFloat32List();
-
-      inputTemperatures
-          .asTypedList(sensorResolution * 4)
-          .buffer
-          .asFloat32List()
-          .setAll(0, temps);
-
-      composeImage(inputTemperatures, composedImage);
-      decodeImageFromPixels(
-        composedImage.asTypedList(upscaledResolution * 4),
-        upscaledWidth,
-        upscaledHeight,
-        PixelFormat.bgra8888,
-        (img) {
-          image?.dispose();
-          image = img;
-
-          maxTemp = temps.reduce(max);
-          minTemp = temps.reduce(min);
-          diff = maxTemp - minTemp;
-
-          if (mounted) setState(() {});
-        },
-      );
-    }
-  }
+  @override
+  String get address => widget.address;
 
   @override
-  void initState() {
-    refresh();
-    super.initState();
-  }
+  void processTemperatures(Float32List temps) async {
+    inputTemperatures
+        .asTypedList(sensorResolution * 4)
+        .buffer
+        .asFloat32List()
+        .setAll(0, temps);
 
-  @override
-  void dispose() {
-    socket.send([0x0], InternetAddress(widget.address), 55544);
-    socket.close();
-    super.dispose();
+    composeImage(inputTemperatures, composedImage);
+    decodeImageFromPixels(
+      composedImage.asTypedList(upscaledResolution * 4),
+      upscaledWidth,
+      upscaledHeight,
+      PixelFormat.bgra8888,
+      (img) {
+        image?.dispose();
+        image = img;
+
+        maxTemp = temps.reduce(max);
+        minTemp = temps.reduce(min);
+        diff = maxTemp - minTemp;
+
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   @override
