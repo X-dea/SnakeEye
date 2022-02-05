@@ -82,6 +82,7 @@ void setup() {
 
 void loop() {
   static IPAddress remote_ip;
+  static uint16_t remote_port;
 
   if (udp.parsePacket()) {
     auto r = udp.read();
@@ -90,6 +91,7 @@ void loop() {
       if (State.DebugPrint()) Serial.println(F("UDP client detached."));
     } else {
       remote_ip = udp.remoteIP();
+      remote_port = udp.remotePort();
       State.udp_client_attached_ = true;
       if (State.DebugPrint()) {
         Serial.print(F("UDP client attached. IP address: "));
@@ -113,7 +115,7 @@ void loop() {
     if (!FetchFrame()) return;
 
     if (State.udp_client_attached_) {
-      udp.beginPacket(remote_ip, UDP_PORT);
+      udp.beginPacket(remote_ip, remote_port);
       udp.write((uint8_t*)mlx90640_temperature, 768 * 4);
       if (udp.endPacket()) {
         delay(10);  // Prevent IP fragment loss.
