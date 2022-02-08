@@ -116,7 +116,8 @@ class SensorConfigurationDialog extends StatefulWidget {
 }
 
 class _SensorConfigurationDialogState extends State<SensorConfigurationDialog> {
-  var level = '3';
+  var refreshRateLevel = '3';
+  var baudRate = '460800';
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +129,7 @@ class _SensorConfigurationDialogState extends State<SensorConfigurationDialog> {
           ListTile(
             title: const Text('Refresh Rate'),
             trailing: DropdownButton<String>(
-              value: level,
+              value: refreshRateLevel,
               items: {
                 '1': '1Hz',
                 '2': '2Hz',
@@ -142,7 +143,25 @@ class _SensorConfigurationDialogState extends State<SensorConfigurationDialog> {
                         child: Text(e.value),
                       ))
                   .toList(),
-              onChanged: (v) => setState(() => level = v!),
+              onChanged: (v) => setState(() => refreshRateLevel = v!),
+            ),
+          ),
+          ListTile(
+            title: const Text('Baud Rate'),
+            trailing: DropdownButton<String>(
+              value: baudRate,
+              items: [
+                '115200',
+                '230400',
+                '460800',
+                '921600',
+              ]
+                  .map((e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(e),
+                      ))
+                  .toList(),
+              onChanged: (v) => setState(() => baudRate = v!),
             ),
           ),
         ],
@@ -156,7 +175,8 @@ class _SensorConfigurationDialogState extends State<SensorConfigurationDialog> {
           child: const Text('Apply'),
           onPressed: () async {
             final uri = Uri.http(widget.address, '/rate', {
-              'level': level,
+              'refresh_level': refreshRateLevel,
+              'baud_rate': baudRate,
             });
             await get(uri);
             Navigator.of(context).pop();

@@ -58,7 +58,7 @@ mixin ConnectionProcessor<T extends StatefulWidget> on State<T> {
     await p.setDTR(true);
     await p.setRTS(true);
     await p.setPortParameters(
-      921600,
+      460800,
       UsbPort.DATABITS_8,
       UsbPort.STOPBITS_1,
       UsbPort.PARITY_NONE,

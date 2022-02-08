@@ -7,7 +7,7 @@ class WebController {
   bool Validate();
   void ChangeToAPMode();
   void ChangeToSTAMode();
-  void SetRefreshRate();
+  void SetRate();
 
  public:
   ESP8266WebServer server_;

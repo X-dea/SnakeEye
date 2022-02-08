@@ -34,13 +34,13 @@ bool FetchFrame() {
 }
 
 void setup() {
-  Serial.begin(921600);
-
   Settings.Load();
   if (Settings.version_ != VERSION) {
     Settings = SnakeEyeSettings();
     Settings.Save();
   }
+
+  Serial.begin(Settings.serial_baud_rate_);
 
   Serial.printf("Setup WiFi: %s %s\n", Settings.ssid_, Settings.password_);
   if (Settings.mode_ == Mode::kAP) {

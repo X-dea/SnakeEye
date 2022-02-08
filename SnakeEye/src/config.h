@@ -1,6 +1,6 @@
 #pragma once
 
-#define VERSION 000200U
+#define VERSION 000300U
 
 #define MLX90640_I2C_ADDR 0x33
 #define WEB_PORT 80
