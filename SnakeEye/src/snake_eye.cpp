@@ -34,7 +34,7 @@ bool FetchFrame() {
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(921600);
 
   Settings.Load();
   if (Settings.version_ != VERSION) {
