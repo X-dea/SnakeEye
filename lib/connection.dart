@@ -66,7 +66,7 @@ mixin ConnectionProcessor<T extends StatefulWidget> on State<T> {
 
     final transaction = Transaction.terminated(
       p.inputStream!,
-      Uint8List.fromList([0xFF, 0x00, 0xFF, 0x00]),
+      Uint8List.fromList([0xF0, 0xF1]),
     );
 
     p.write(Uint8List.fromList([1]));

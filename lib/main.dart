@@ -53,6 +53,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   var controller = TextEditingController(text: '192.168.4.1');
   var devices = <UsbDevice>[];
+  var cameraPreview = false;
   var scale = 1;
 
   Future<void> refreshSerialPorts() async {
@@ -86,6 +87,7 @@ class _MainPageState extends State<MainPage> {
           ),
           ListTile(
             title: const Text('Scale'),
+            subtitle: const Text('NonCV only.'),
             trailing: SizedBox(
               width: MediaQuery.of(context).size.width / 2,
               child: Slider(
@@ -114,6 +116,12 @@ class _MainPageState extends State<MainPage> {
               ),
               onTap: refreshSerialPorts,
             ),
+          if (Platform.isAndroid)
+            SwitchListTile.adaptive(
+              title: const Text('Camera Preview'),
+              value: cameraPreview,
+              onChanged: (v) => setState(() => cameraPreview = v),
+            ),
           Wrap(
             alignment: WrapAlignment.spaceEvenly,
             spacing: 10,
@@ -136,6 +144,7 @@ class _MainPageState extends State<MainPage> {
                   MaterialPageRoute(
                     builder: (context) => OpenCVSensorPage(
                       address: controller.text,
+                      cameraPreview: cameraPreview,
                     ),
                   ),
                 ),

@@ -125,9 +125,9 @@ void loop() {
     }
 
     if (State.serial_client_attached_) {
-      static const uint8_t terminator[] = {0xFF, 0x0, 0xFF, 0x0};
+      static const uint8_t terminator[] = {0xF0, 0xF1};
       if (!Serial.write((uint8_t*)mlx90640_temperature, 768 * 4) ||
-          !Serial.write(terminator, 4)) {
+          !Serial.write(terminator, 2)) {
         State.serial_client_attached_ = false;
       }
     }

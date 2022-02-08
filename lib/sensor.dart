@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -122,53 +123,62 @@ class _SensorPageState extends State<SensorPage> with ConnectionProcessor {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sensor'),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Directionality(
-              // Flip sensor around y-axis.
-              textDirection: TextDirection.rtl,
-              child: sensorArea,
+      appBar: Platform.isAndroid
+          ? null
+          : AppBar(
+              title: const Text('Sensor'),
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 70,
-                child: Text(
-                  '${minTemp.toStringAsFixed(2)}°C',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  height: 10,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.blue,
-                        Colors.red,
-                      ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: diff != 0.0
+                  ? Directionality(
+                      // Flip sensor around y-axis.
+                      textDirection: TextDirection.rtl,
+                      child: sensorArea,
+                    )
+                  : const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    ),
+            ),
+            if (diff != 0.0)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 70,
+                    child: Text(
+                      '${minTemp.toStringAsFixed(2)}°C',
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                ),
+                  Expanded(
+                    child: Container(
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.blue,
+                            Colors.red,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 170,
+                    child: Text(
+                      '${maxTemp.toStringAsFixed(2)}°C '
+                      'Delta: ${diff.toStringAsFixed(2)}°C',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(
-                width: 170,
-                child: Text(
-                  '${maxTemp.toStringAsFixed(2)}°C '
-                  'Delta: ${diff.toStringAsFixed(2)}°C',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

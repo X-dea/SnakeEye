@@ -14,19 +14,25 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:snake_eye/connection.dart';
 
 import 'common.dart';
 
 class ImagePainter extends CustomPainter {
-  Image image;
+  final Image image;
+  final double opacity;
 
-  ImagePainter(this.image);
+  const ImagePainter({
+    required this.image,
+    this.opacity = 1.0,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -35,6 +41,7 @@ class ImagePainter extends CustomPainter {
       rect: Rect.fromLTWH(0, 0, size.width, size.height),
       image: image,
       fit: size.aspectRatio > ratio ? BoxFit.fitHeight : BoxFit.fitWidth,
+      opacity: opacity,
     );
   }
 
@@ -44,8 +51,13 @@ class ImagePainter extends CustomPainter {
 
 class OpenCVSensorPage extends StatefulWidget {
   final String address;
+  final bool cameraPreview;
 
-  const OpenCVSensorPage({Key? key, required this.address}) : super(key: key);
+  const OpenCVSensorPage({
+    Key? key,
+    required this.address,
+    this.cameraPreview = false,
+  }) : super(key: key);
 
   @override
   State<OpenCVSensorPage> createState() => _OpenCVSensorPageState();
@@ -58,6 +70,7 @@ class _OpenCVSensorPageState extends State<OpenCVSensorPage>
   var diff = 0.0;
 
   Image? image;
+  CameraController? controller;
 
   @override
   String get address => widget.address;
@@ -89,65 +102,104 @@ class _OpenCVSensorPageState extends State<OpenCVSensorPage>
     );
   }
 
+  void initCamera() async {
+    final cameras = await availableCameras();
+    controller = CameraController(
+      cameras.first,
+      ResolutionPreset.max,
+      enableAudio: false,
+    );
+    await controller?.initialize();
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void initState() {
+    if (widget.cameraPreview) initCamera();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (image == null) return const Center(child: CircularProgressIndicator());
-
-    final body = LayoutBuilder(
-      builder: (context, constraints) {
-        return CustomPaint(
-          painter: ImagePainter(image!),
-          size: constraints.biggest,
-        );
-      },
-    );
-
+    final image = this.image;
+    final controller = this.controller;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sensor'),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: body,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 70,
-                child: Text(
-                  '${minTemp.toStringAsFixed(2)}°C',
-                  textAlign: TextAlign.center,
-                ),
+      appBar: Platform.isAndroid ? null : AppBar(title: const Text('Sensor')),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (controller != null && controller.value.isInitialized)
+                    Center(
+                      child: AspectRatio(
+                        aspectRatio: controller.value.aspectRatio,
+                        child: Transform.translate(
+                          offset: const Offset(-50, 0),
+                          child: CameraPreview(controller),
+                        ),
+                      ),
+                    ),
+                  if (image != null)
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        return CustomPaint(
+                          painter: ImagePainter(
+                            image: image,
+                            opacity: widget.cameraPreview ? 0.5 : 1.0,
+                          ),
+                          size: constraints.biggest,
+                        );
+                      },
+                    ),
+                  if (controller == null && image == null)
+                    const Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    ),
+                ],
               ),
-              Expanded(
-                child: Container(
-                  height: 10,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Color.fromARGB(255, 0, 0, 255),
-                        Color.fromARGB(255, 0, 255, 255),
-                        Color.fromARGB(255, 255, 255, 0),
-                        Color.fromARGB(255, 255, 0, 0),
-                      ],
+            ),
+            if (image != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 70,
+                    child: Text(
+                      '${minTemp.toStringAsFixed(2)}°C',
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                ),
+                  Expanded(
+                    child: Container(
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Color.fromARGB(255, 0, 0, 255),
+                            Color.fromARGB(255, 0, 255, 255),
+                            Color.fromARGB(255, 255, 255, 0),
+                            Color.fromARGB(255, 255, 0, 0),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 170,
+                    child: Text(
+                      '${maxTemp.toStringAsFixed(2)}°C '
+                      'Delta: ${diff.toStringAsFixed(2)}°C',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(
-                width: 170,
-                child: Text(
-                  '${maxTemp.toStringAsFixed(2)}°C '
-                  'Delta: ${diff.toStringAsFixed(2)}°C',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
