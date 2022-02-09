@@ -57,8 +57,10 @@ void setup() {
     Serial.println(F("Failed to dump eeprom of MLX90640."));
     ESP.restart();
   }
-
-  if (MLX90640_ExtractParameters(mlx90640_eeprom, &mlx90640_params) != 0) {
+  int ret = MLX90640_ExtractParameters(mlx90640_eeprom, &mlx90640_params);
+  if (ret == -4) {
+    Serial.println(F("too many outliers."));
+  } else if (ret != 0) {
     Serial.println(F("Failed to extract params of MLX90640."));
     ESP.restart();
   }
