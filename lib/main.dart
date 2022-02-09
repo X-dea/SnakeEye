@@ -112,7 +112,8 @@ class _MainPageState extends State<MainPage> {
                       child: Text(device.deviceName),
                     ),
                 ],
-                onChanged: (v) => controller.text = 'serial://$v',
+                onChanged: (v) =>
+                    controller.text = 'serial://$v?baud_rate=460800',
               ),
               onTap: refreshSerialPorts,
             ),

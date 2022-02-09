@@ -137,7 +137,7 @@ class _OpenCVSensorPageState extends State<OpenCVSensorPage>
                       child: AspectRatio(
                         aspectRatio: controller.value.aspectRatio,
                         child: Transform.translate(
-                          offset: const Offset(-50, 0),
+                          offset: const Offset(-60, 0),
                           child: CameraPreview(controller),
                         ),
                       ),

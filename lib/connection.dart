@@ -47,7 +47,10 @@ mixin ConnectionProcessor<T extends StatefulWidget> on State<T> {
   }
 
   void refreshSerial() async {
-    final deviceId = int.tryParse(address.split('//').last);
+    final uri = Uri.tryParse(address);
+    if (uri == null || uri.scheme != 'serial') return;
+
+    final deviceId = int.tryParse(uri.host);
     if (deviceId == null) return;
 
     port = await UsbSerial.createFromDeviceId(deviceId);
@@ -58,7 +61,7 @@ mixin ConnectionProcessor<T extends StatefulWidget> on State<T> {
     await p.setDTR(true);
     await p.setRTS(true);
     await p.setPortParameters(
-      460800,
+      int.parse(uri.queryParameters['baud_rate'] ?? '460800'),
       UsbPort.DATABITS_8,
       UsbPort.STOPBITS_1,
       UsbPort.PARITY_NONE,
