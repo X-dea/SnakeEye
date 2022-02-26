@@ -4,10 +4,10 @@ project(runner LANGUAGES CXX)
 find_package(OpenCV REQUIRED PATHS ../../third_party/opencv-windows/build/x64/vc15/lib)
 
 file(GLOB ffi_src
-     "../../lib/*.hpp"
-     "../../lib/*.cpp"
-     "../../lib/include/*.h"
-     "../../lib/include/*.cpp"
+     "../../src/*.hpp"
+     "../../src/*.cpp"
+     "../../src/include/*.h"
+     "../../src/include/*.cpp"
 )
 
 add_executable(${BINARY_NAME} WIN32
