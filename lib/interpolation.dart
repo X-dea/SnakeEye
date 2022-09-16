@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Jason C.H.
+// Copyright (C) 2020-2022 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,7 +15,7 @@
 
 import 'dart:typed_data';
 
-// Use bilinear interpolation to upscale temperature matrix.
+/// Use bilinear interpolation to upscale temperature matrix.
 Float32List interpolate(
   Float32List src, {
   int width = 32,

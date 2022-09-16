@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Jason C.H.
+// Copyright (C) 2020-2022 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -42,9 +42,4 @@ void initFFI() {
   composeImage = lib.lookupFunction<
       Void Function(Pointer<Uint8>, Pointer<Uint8>),
       void Function(Pointer<Uint8>, Pointer<Uint8>)>('ComposeImage');
-
-  // lib.lookupFunction<
-  //     Void Function(Pointer<Void>),
-  //     void Function(
-  //         Pointer<Void>)>('InitializeDartApi')(NativeApi.initializeApiDLData);
 }

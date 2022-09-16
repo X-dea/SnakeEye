@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Jason C.H.
+// Copyright (C) 2020-2022 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -94,7 +94,7 @@ class _WifiConfigurationDialogState extends State<WifiConfigurationDialog> {
               'password': passwordController.text
             });
             await get(uri);
-            Navigator.of(context).pop();
+            if (mounted) Navigator.of(context).pop();
           },
         ),
       ],
@@ -179,7 +179,7 @@ class _SensorConfigurationDialogState extends State<SensorConfigurationDialog> {
               'baud_rate': baudRate,
             });
             await get(uri);
-            Navigator.of(context).pop();
+            if (mounted) Navigator.of(context).pop();
           },
         ),
       ],
