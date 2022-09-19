@@ -20,14 +20,15 @@ import 'package:ffi/ffi.dart';
 
 const sensorWidth = 32;
 const sensorHeight = 24;
-const sensorResolution = sensorWidth * sensorHeight;
+const sensorPixels = sensorWidth * sensorHeight;
+const rawFrameLength = sensorPixels * 4;
 const ratio = sensorWidth / sensorHeight;
 
 const upscaledWidth = 320;
 const upscaledHeight = 240;
 const upscaledResolution = upscaledWidth * upscaledHeight;
 
-final inputTemperatures = malloc.allocate<Uint8>(sensorResolution * 4);
+final inputTemperatures = malloc.allocate<Uint8>(sensorPixels * 4);
 final composedImage = malloc.allocate<Uint8>(upscaledResolution * 4);
 
 late DynamicLibrary lib;

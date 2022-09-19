@@ -78,7 +78,7 @@ class _OpenCVSensorPageState extends State<OpenCVSensorPage>
   @override
   void processTemperatures(Float32List temps) async {
     inputTemperatures
-        .asTypedList(sensorResolution * 4)
+        .asTypedList(sensorPixels * 4)
         .buffer
         .asFloat32List()
         .setAll(0, temps);
