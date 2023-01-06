@@ -1,6 +1,6 @@
 /**
  * @copyright (C) 2017 Melexis N.V.
- * @copyright (C) 2021 Jason C.H.
+ * @copyright (C) 2021-2023 Jason C.H.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 
 void MLX90640_I2CInit();
 int MLX90640_I2CGeneralReset();
+void MLX90640_I2CFreqSet(int freq);
 int MLX90640_I2CRead(uint8_t slave_addr, uint16_t start_addr,
                      uint16_t num_of_addr, uint16_t *data);
 int MLX90640_I2CWrite(uint8_t slave_addr, uint16_t write_addr, uint16_t data);
-void MLX90640_I2CFreqSet(int freq);

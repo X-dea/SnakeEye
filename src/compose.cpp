@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jason C.H.
+// Copyright (C) 2020-2023 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,10 +20,10 @@
 using namespace cv;
 
 FFI_EXPORT void ComposeImage(uint8_t* input, uint8_t* composed) {
-  auto composed_mat = Mat(Size(320, 240), CV_8UC4, composed);
   auto input_mat = Mat(Size(32, 24), CV_32FC1, input);
-  flip(input_mat, input_mat, 1);
+  auto composed_mat = Mat(Size(320, 240), CV_8UC4, composed);
 
+  flip(input_mat, input_mat, 1);
   normalize(input_mat, input_mat, 0, 255, NORM_MINMAX);
 
   Mat temp;

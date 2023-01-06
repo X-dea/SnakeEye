@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(runner LANGUAGES CXX)
 
-find_package(OpenCV REQUIRED PATHS ../../third_party/opencv-windows/build/x64/vc15/lib)
+find_package(OpenCV REQUIRED PATHS ../../third_party/opencv-windows/build/x64/vc16/lib)
 
 file(GLOB ffi_src
   "../../src/*.hpp"
@@ -40,7 +40,9 @@ target_compile_definitions(${BINARY_NAME} PRIVATE "NOMINMAX")
 
 # Add dependency libraries and include directories. Add any application-specific
 # dependencies here.
-target_link_libraries(${BINARY_NAME} PRIVATE flutter flutter_wrapper_app ${OpenCV_LIBS})
+target_link_libraries(${BINARY_NAME} PRIVATE flutter flutter_wrapper_app)
+target_link_libraries(${BINARY_NAME} PRIVATE "dwmapi.lib")
+target_link_libraries(${BINARY_NAME} PRIVATE ${OpenCV_LIBS})
 target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}" ${OpenCV_INCLUDE_DIRS})
 
 # Run the Flutter tool portions of the build. This must not be removed.

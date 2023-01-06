@@ -23,6 +23,8 @@ void MLX90640_I2CInit() { Wire.begin(); }
 
 int MLX90640_I2CGeneralReset() { return 0; }
 
+void MLX90640_I2CFreqSet(int freq) { Wire.setClock(1000U * freq); }
+
 int MLX90640_I2CRead(uint8_t slave_addr, uint16_t start_addr,
                      uint16_t num_of_addr, uint16_t *data) {
   uint16_t remaining_bytes = num_of_addr * 2;
@@ -54,8 +56,6 @@ int MLX90640_I2CRead(uint8_t slave_addr, uint16_t start_addr,
 
   return 0;
 }
-
-void MLX90640_I2CFreqSet(int freq) { Wire.setClock(1000U * freq); }
 
 int MLX90640_I2CWrite(uint8_t slave_addr, uint16_t write_addr, uint16_t data) {
   // Write
