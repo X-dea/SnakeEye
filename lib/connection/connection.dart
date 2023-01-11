@@ -13,24 +13,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include <opencv2/opencv.hpp>
+import 'dart:async';
+import 'dart:typed_data';
 
-#include "common.hpp"
+import '../setting.dart';
 
-using namespace cv;
+/// Represent a connection to device.
+abstract class Connection {
+  /// Establish connection to device.
+  Future<void> connect();
 
-FFI_EXPORT void ComposeImage(uint8_t* input, uint8_t* composed) {
-  auto input_mat = Mat(Size(32, 24), CV_32FC1, input);
-  auto composed_mat = Mat(Size(320, 240), CV_8UC4, composed);
+  /// Disconnect from device.
+  Future<void> disconnect();
 
-  flip(input_mat, input_mat, 1);
-  normalize(input_mat, input_mat, 0, 255, NORM_MINMAX);
+  /// Start receiving frame data.
+  Stream<Float32List> receiveFrames();
 
-  Mat temp;
-  input_mat.convertTo(temp, CV_8UC1);
-  fastNlMeansDenoising(temp, temp, 30.0f);
+  /// Stop receiving frame data.
+  Future<void> stopFrames();
 
-  applyColorMap(temp, temp, COLORMAP_JET);
-  cvtColor(temp, temp, COLOR_BGR2BGRA);
-  resize(temp, composed_mat, Size(320, 240));
+  /// Obtain settings from device.
+  Future<SnakeEyeSettings?> get settings;
+
+  /// Save settings to device.
+  Future<void> saveSettings(SnakeEyeSettings settings);
 }

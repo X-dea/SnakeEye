@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jason C.H.
+// Copyright (C) 2020-2023 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -10,6 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
+import 'dart:ffi';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:snake_eye/connect_page.dart';
 
@@ -17,7 +20,17 @@ import 'common.dart';
 
 void main() {
   runApp(const App());
-  initFFI();
+
+  // Initialize FFI.
+  if (Platform.isAndroid) {
+    lib = DynamicLibrary.open('libSnakeEye.so');
+  } else {
+    lib = DynamicLibrary.executable();
+  }
+
+  processImage = lib.lookupFunction<
+      Void Function(Pointer<Uint8>, Pointer<Uint8>),
+      void Function(Pointer<Uint8>, Pointer<Uint8>)>('ProcessImage');
 }
 
 class App extends StatelessWidget {
@@ -31,6 +44,7 @@ class App extends StatelessWidget {
         colorSchemeSeed: Colors.redAccent,
         useMaterial3: true,
       ),
+      themeMode: ThemeMode.system,
       home: const ConnectPage(),
     );
   }

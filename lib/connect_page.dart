@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jason C.H.
+// Copyright (C) 2020-2023 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,7 +16,9 @@
 import 'package:flutter/material.dart';
 import 'package:usb_serial/usb_serial.dart';
 
-import 'connection.dart';
+import 'connection/connection.dart';
+import 'connection/serial_connection.dart';
+import 'connection/udp_connection.dart';
 import 'main_page.dart';
 
 class ConnectPage extends StatefulWidget {
@@ -38,7 +40,7 @@ class _ConnectPageState extends State<ConnectPage> {
     if (mounted) setState(() {});
   }
 
-  void _connect() {
+  void _connect() async {
     final addr = _addressController.text;
     try {
       final uri = Uri.parse(addr);
@@ -48,10 +50,13 @@ class _ConnectPageState extends State<ConnectPage> {
           connection = UdpConnection(uri);
           break;
         case 'serial':
-        //
+          connection = SerialConnection(uri);
+          break;
         default:
           throw const FormatException();
       }
+
+      connection.connect();
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(

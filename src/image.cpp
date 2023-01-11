@@ -13,22 +13,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import 'dart:ffi';
+#include <opencv2/opencv.hpp>
 
-import 'package:ffi/ffi.dart';
+#include "common.hpp"
 
-const sensorWidth = 32;
-const sensorHeight = 24;
-const sensorPixels = sensorWidth * sensorHeight;
-const rawFrameLength = sensorPixels * 4;
-const ratio = sensorWidth / sensorHeight;
+using namespace cv;
 
-const upscaledWidth = 320;
-const upscaledHeight = 240;
-const upscaledPixels = upscaledWidth * upscaledHeight;
+FFI_EXPORT void ProcessImage(uint8_t* input, uint8_t* output) {
+  auto input_mat = Mat(Size(32, 24), CV_32FC1, input);
+  auto output_mat = Mat(Size(320, 240), CV_8UC4, output);
 
-final inputTemperatures = malloc.allocate<Uint8>(sensorPixels * 4);
-final outputImage = malloc.allocate<Uint8>(upscaledPixels * 4);
+  flip(input_mat, input_mat, 1);
+  normalize(input_mat, input_mat, 0, 255, NORM_MINMAX);
 
-late DynamicLibrary lib;
-late void Function(Pointer<Uint8>, Pointer<Uint8>) processImage;
+  Mat temp;
+  input_mat.convertTo(temp, CV_8UC1);
+  fastNlMeansDenoising(temp, temp, 30.0f);
+
+  applyColorMap(temp, temp, COLORMAP_JET);
+  cvtColor(temp, temp, COLOR_BGR2BGRA);
+  resize(temp, output_mat, Size(320, 240));
+}

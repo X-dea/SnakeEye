@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jason C.H.
+// Copyright (C) 2020-2023 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,26 +18,24 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:snake_eye/connection.dart';
 
 import 'common.dart';
+import 'connection/connection.dart';
 import 'interpolation.dart';
 
-class SensorPage extends StatefulWidget {
-  final String address;
-  final int scale;
+class PixelsPage extends StatefulWidget {
+  final Connection connection;
 
-  const SensorPage({
+  const PixelsPage({
     Key? key,
-    required this.address,
-    this.scale = 1,
+    required this.connection,
   }) : super(key: key);
 
   @override
-  State<SensorPage> createState() => _SensorPageState();
+  State<PixelsPage> createState() => _PixelsPageState();
 }
 
-class _SensorPageState extends State<SensorPage> with ConnectionProcessor {
+class _PixelsPageState extends State<PixelsPage> {
   final tween = ColorTween(begin: Colors.blue, end: Colors.red);
   late final int displayWidth;
   late final int displayHeight;
@@ -45,12 +43,10 @@ class _SensorPageState extends State<SensorPage> with ConnectionProcessor {
   var maxTemp = -273.15;
   var minTemp = -273.15;
   var diff = 0.0;
+  var temps = Float32List(0);
 
-  @override
-  String get address => widget.address;
-
-  @override
-  void processTemperatures(Float32List temps) {
+  void processTemperatures(Float32List t) {
+    temps = t;
     if (displayWidth != sensorWidth || displayHeight != sensorHeight) {
       temps = interpolate(
         temps,
@@ -58,7 +54,6 @@ class _SensorPageState extends State<SensorPage> with ConnectionProcessor {
         targetHeight: displayHeight,
       );
     }
-
     maxTemp = temps.reduce(max);
     minTemp = temps.reduce(min);
     diff = maxTemp - minTemp;
@@ -68,9 +63,18 @@ class _SensorPageState extends State<SensorPage> with ConnectionProcessor {
 
   @override
   void initState() {
-    displayWidth = sensorWidth * widget.scale;
-    displayHeight = sensorHeight * widget.scale;
+    displayWidth = sensorWidth;
+    displayHeight = sensorHeight;
+    widget.connection
+        .receiveFrames()
+        .listen((event) => processTemperatures(event));
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    widget.connection.stopFrames();
+    super.dispose();
   }
 
   @override

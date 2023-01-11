@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jason C.H.
+// Copyright (C) 2020-2023 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,7 +16,9 @@
 import 'package:flutter/material.dart';
 
 import 'connect_page.dart';
-import 'connection.dart';
+import 'connection/connection.dart';
+import 'opencv_page.dart';
+import 'pixels_page.dart';
 
 class MainPage extends StatelessWidget {
   final Connection connection;
@@ -33,6 +35,7 @@ class MainPage extends StatelessWidget {
             icon: const Icon(Icons.link),
             tooltip: connection.runtimeType.toString(),
             onPressed: () {
+              connection.disconnect();
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => const ConnectPage(),
@@ -45,20 +48,31 @@ class MainPage extends StatelessWidget {
       body: ListView(
         children: [
           ListTile(
-            title: const Text('Sensor Configuration'),
+            leading: const Icon(Icons.settings),
+            title: const Text('Configuration'),
             onTap: () {},
           ),
           ListTile(
-            title: const Text('WiFi Configuration'),
-            onTap: () {},
-          ),
-          ListTile(
+            leading: const Icon(Icons.pix),
             title: const Text('Pixels View'),
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => PixelsPage(connection: connection),
+                ),
+              );
+            },
           ),
           ListTile(
+            leading: const Icon(Icons.camera),
             title: const Text('OpenCV View'),
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => OpenCVPage(connection: connection),
+                ),
+              );
+            },
           ),
         ],
       ),

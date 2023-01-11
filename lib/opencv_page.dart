@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jason C.H.
+// Copyright (C) 2020-2023 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,9 +21,9 @@ import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart' hide Image;
-import 'package:snake_eye/connection.dart';
 
 import 'common.dart';
+import 'connection/connection.dart';
 
 class ImagePainter extends CustomPainter {
   final Image image;
@@ -49,22 +49,19 @@ class ImagePainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-class OpenCVSensorPage extends StatefulWidget {
-  final String address;
-  final bool cameraPreview;
+class OpenCVPage extends StatefulWidget {
+  final Connection connection;
 
-  const OpenCVSensorPage({
+  const OpenCVPage({
     Key? key,
-    required this.address,
-    this.cameraPreview = false,
+    required this.connection,
   }) : super(key: key);
 
   @override
-  State<OpenCVSensorPage> createState() => _OpenCVSensorPageState();
+  State<OpenCVPage> createState() => _OpenCVPageState();
 }
 
-class _OpenCVSensorPageState extends State<OpenCVSensorPage>
-    with ConnectionProcessor {
+class _OpenCVPageState extends State<OpenCVPage> {
   var maxTemp = -273.15;
   var minTemp = -273.15;
   var diff = 0.0;
@@ -72,10 +69,6 @@ class _OpenCVSensorPageState extends State<OpenCVSensorPage>
   Image? image;
   CameraController? controller;
 
-  @override
-  String get address => widget.address;
-
-  @override
   void processTemperatures(Float32List temps) async {
     inputTemperatures
         .asTypedList(sensorPixels * 4)
@@ -83,9 +76,9 @@ class _OpenCVSensorPageState extends State<OpenCVSensorPage>
         .asFloat32List()
         .setAll(0, temps);
 
-    composeImage(inputTemperatures, composedImage);
+    processImage(inputTemperatures, outputImage);
     decodeImageFromPixels(
-      composedImage.asTypedList(upscaledResolution * 4),
+      outputImage.asTypedList(upscaledPixels * 4),
       upscaledWidth,
       upscaledHeight,
       PixelFormat.bgra8888,
@@ -115,8 +108,16 @@ class _OpenCVSensorPageState extends State<OpenCVSensorPage>
 
   @override
   void initState() {
-    if (widget.cameraPreview) initCamera();
+    widget.connection
+        .receiveFrames()
+        .listen((event) => processTemperatures(event));
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    widget.connection.stopFrames();
+    super.dispose();
   }
 
   @override
@@ -148,7 +149,7 @@ class _OpenCVSensorPageState extends State<OpenCVSensorPage>
                         return CustomPaint(
                           painter: ImagePainter(
                             image: image,
-                            opacity: widget.cameraPreview ? 0.5 : 1.0,
+                            opacity: /* widget.cameraPreview ? 0.5 :*/ 1.0,
                           ),
                           size: constraints.biggest,
                         );
