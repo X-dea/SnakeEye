@@ -288,10 +288,11 @@ packages:
   usb_serial:
     dependency: "direct main"
     description:
-      name: usb_serial
-      sha256: "031be280a45ecfe86afb5ecf7871d308f8f00121c91d03a943e2bd9de37a51ee"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: c20e1e6e171137db4b52413dac14333653f07905
+      url: "https://github.com/altera2015/usbserial"
+    source: git
     version: "0.4.0"
   vector_math:
     dependency: transitive
