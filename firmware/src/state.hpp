@@ -17,13 +17,11 @@
 
 #pragma once
 
-#define VERSION 1'00'00U
+class SnakeEyeState {
+ public:
+  bool udp_client_attached_ = false;
+  bool serial_client_attached_ = false;
+  inline bool DebugPrint() { return !serial_client_attached_; }
+};
 
-#define MLX90640_I2C_ADDR 0x33
-#define UDP_PORT 55544
-
-#define MAX_SSID_LENGTH 32
-#define MAX_PASSWORD_LENGTH 32
-
-#define DEFAULT_SSID "SnakeEye"
-#define DEFAULT_PASSWORD "5nakeEye"
+extern SnakeEyeState State;

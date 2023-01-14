@@ -15,15 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "state.hpp"
 
-#define VERSION 1'00'00U
-
-#define MLX90640_I2C_ADDR 0x33
-#define UDP_PORT 55544
-
-#define MAX_SSID_LENGTH 32
-#define MAX_PASSWORD_LENGTH 32
-
-#define DEFAULT_SSID "SnakeEye"
-#define DEFAULT_PASSWORD "5nakeEye"
+SnakeEyeState State;

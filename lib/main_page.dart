@@ -19,6 +19,7 @@ import 'connect_page.dart';
 import 'connection/connection.dart';
 import 'opencv_page.dart';
 import 'pixels_page.dart';
+import 'setting.dart';
 
 class MainPage extends StatelessWidget {
   final Connection connection;
@@ -49,8 +50,8 @@ class MainPage extends StatelessWidget {
         children: [
           ListTile(
             leading: const Icon(Icons.settings),
-            title: const Text('Configuration'),
-            onTap: () {},
+            title: const Text('Settings'),
+            onTap: () => SettingsDialog.show(context, connection),
           ),
           ListTile(
             leading: const Icon(Icons.pix),

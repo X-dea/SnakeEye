@@ -1,4 +1,3 @@
-
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <MLX90640_API.h>
@@ -7,13 +6,13 @@
 
 #include "config.h"
 #include "settings.hpp"
-#include "web.hpp"
+#include "state.hpp"
 
 static paramsMLX90640 mlx90640_params;
-static WiFiUDP udp;
-
 static uint16_t mlx90640_frame[834];
 static float mlx90640_temperature[768];
+
+static WiFiUDP udp;
 
 bool FetchFrame() {
   if (MLX90640_GetFrameData(MLX90640_I2C_ADDR, mlx90640_frame) < 0) {
@@ -43,7 +42,7 @@ void setup() {
   Serial.begin(Settings.serial_baud_rate_);
 
   Serial.printf("Setup WiFi: %s %s\n", Settings.ssid_, Settings.password_);
-  if (Settings.mode_ == Mode::kAP) {
+  if (Settings.wifi_mode_ == WifiMode::kAP) {
     WiFi.softAP(Settings.ssid_, Settings.password_);
   } else {
     WiFi.begin(Settings.ssid_, Settings.password_);
@@ -54,22 +53,27 @@ void setup() {
 
   uint16_t mlx90640_eeprom[832];
   if (MLX90640_DumpEE(MLX90640_I2C_ADDR, mlx90640_eeprom) != 0) {
-    Serial.println(F("Failed to dump eeprom of MLX90640."));
+    Serial.println(F("MLX90640: Failed to dump EEPROM."));
     ESP.restart();
   }
 
   int ret = MLX90640_ExtractParameters(mlx90640_eeprom, &mlx90640_params);
-  if (ret == -4) {
-    Serial.println(F("Too many outliers."));
-  } else if (ret != 0) {
-    Serial.println(F("Failed to extract params of MLX90640."));
-    ESP.restart();
+  switch (ret) {
+    case 0:
+      Serial.println(F("MLX90640: Initialized."));
+      break;
+    case -4:
+      Serial.println(F("MLX90640: Too many outliers."));
+      break;
+    default:
+      Serial.println(F("MLX90640: Failed to extract params."));
+      ESP.restart();
   }
 
   MLX90640_SetRefreshRate(MLX90640_I2C_ADDR, Settings.refresh_rate_level_);
   MLX90640_I2CFreqSet(600);
 
-  if (Settings.mode_ == Mode::kSTA) {
+  if (Settings.wifi_mode_ == WifiMode::kSTA) {
     if (WiFi.waitForConnectResult() != WL_CONNECTED) {
       Serial.println(F("Failed to connect WiFi."));
       ESP.restart();
@@ -80,7 +84,6 @@ void setup() {
   }
 
   udp.begin(UDP_PORT);
-  Web.Setup();
 }
 
 void loop() {
@@ -92,6 +95,10 @@ void loop() {
     if (r == 0x0) {
       State.udp_client_attached_ = false;
       if (State.DebugPrint()) Serial.println(F("UDP client detached."));
+    } else if (r == 0x2) {
+      udp.beginPacket(udp.remoteIP(), udp.remotePort());
+      Settings.writeTo(udp);
+      udp.endPacket();
     } else {
       remote_ip = udp.remoteIP();
       remote_port = udp.remotePort();
@@ -135,6 +142,4 @@ void loop() {
       }
     }
   }
-
-  Web.server_.handleClient();
 }

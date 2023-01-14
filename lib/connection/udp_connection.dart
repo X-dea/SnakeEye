@@ -14,6 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -77,8 +78,22 @@ class UdpConnection implements Connection {
   }
 
   @override
-  Future<SnakeEyeSettings?> get settings async {
-    throw UnimplementedError();
+  Future<SnakeEyeSettings?> get settings {
+    final completer = Completer<SnakeEyeSettings?>();
+    _stream?.first.then((data) {
+      if (data.first == 123 && data.last == 125) {
+        try {
+          final json = jsonDecode(utf8.decode(data));
+          completer.complete(SnakeEyeSettings.fromJson(json));
+        } catch (_) {
+          completer.complete(null);
+        }
+      } else {
+        completer.complete(null);
+      }
+    });
+    _socket?.send([0x2], address, port);
+    return completer.future;
   }
 
   @override
