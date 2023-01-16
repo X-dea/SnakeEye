@@ -21,7 +21,8 @@ class SnakeEyeState {
  public:
   bool udp_client_attached_ = false;
   bool serial_client_attached_ = false;
-  inline bool DebugPrint() { return !serial_client_attached_; }
+  bool serial_client_detected_ = false;
+  inline bool DebugPrint() { return !serial_client_detected_; }
 };
 
 extern SnakeEyeState State;

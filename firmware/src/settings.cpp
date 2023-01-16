@@ -55,7 +55,7 @@ void SnakeEyeSettings::Save() {
 }
 
 void SnakeEyeSettings::LoadFrom(Stream& stream) {
-  StaticJsonDocument<128> json;
+  StaticJsonDocument<192> json;
   deserializeJson(json, stream);
   if (version_ != json[KEY_VERSION]) return;
 

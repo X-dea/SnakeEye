@@ -30,6 +30,8 @@ class SnakeEyeSettings extends _SnakeEyeSettings with _$SnakeEyeSettings {
 
   factory SnakeEyeSettings.fromJson(Map<String, dynamic> json) =>
       _$SnakeEyeSettingsFromJson(json);
+
+  Map<String, dynamic> toJson() => _$SnakeEyeSettingsToJson(this);
 }
 
 abstract class _SnakeEyeSettings with Store {
@@ -88,7 +90,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
     if (mounted) setState(() {});
   }
 
-  Future<void> _save() async {}
+  Future<void> _save() async {
+    await widget.connection.saveSettings(_settings!);
+    if (mounted) Navigator.of(context).pop();
+  }
 
   @override
   void initState() {
@@ -161,7 +166,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
             validator: (v) => v == null || v.length < 8 || v.length >= 30
                 ? 'Invalid password'
                 : null,
-            onChanged: (v) => settings.ssid = v,
+            onChanged: (v) => settings.password = v,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,

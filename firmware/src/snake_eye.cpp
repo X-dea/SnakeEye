@@ -17,7 +17,7 @@ static WiFiUDP udp;
 bool FetchFrame() {
   if (MLX90640_GetFrameData(MLX90640_I2C_ADDR, mlx90640_frame) < 0) {
     if (State.DebugPrint()) {
-      Serial.println("Failed to get frame from MLX90640.");
+      Serial.println(F("MLX90640: Failed to get frame."));
     }
     return false;
   }
@@ -91,33 +91,54 @@ void loop() {
   static uint16_t remote_port;
 
   if (udp.parsePacket()) {
-    auto r = udp.read();
-    if (r == 0x0) {
-      State.udp_client_attached_ = false;
-      if (State.DebugPrint()) Serial.println(F("UDP client detached."));
-    } else if (r == 0x2) {
-      udp.beginPacket(udp.remoteIP(), udp.remotePort());
-      Settings.writeTo(udp);
-      udp.endPacket();
-    } else {
-      remote_ip = udp.remoteIP();
-      remote_port = udp.remotePort();
-      State.udp_client_attached_ = true;
-      if (State.DebugPrint()) {
-        Serial.print(F("UDP client attached. IP address: "));
-        Serial.println(remote_ip);
-      }
+    auto cmd = udp.read();
+    switch (cmd) {
+      case CMD_STOP_FRAMES:
+        State.udp_client_attached_ = false;
+        if (State.DebugPrint()) Serial.println(F("UDP client detached."));
+        break;
+
+      case CMD_START_FRAMES:
+        remote_ip = udp.remoteIP();
+        remote_port = udp.remotePort();
+        State.udp_client_attached_ = true;
+        if (State.DebugPrint()) {
+          Serial.print(F("UDP client attached. IP address: "));
+          Serial.println(remote_ip);
+        }
+        break;
+
+      case CMD_GET_SETTINGS:
+        udp.beginPacket(udp.remoteIP(), udp.remotePort());
+        Settings.writeTo(udp);
+        udp.endPacket();
+        break;
+
+      case CMD_SET_SETTINGS:
+        Settings.LoadFrom(udp);
+        break;
+
+      default:
+        break;
     }
   }
 
   if (Serial.available() > 0) {
-    auto c = Serial.read();
-    if (c == 0x0 || c == '0') {
-      State.serial_client_attached_ = false;
-      if (State.DebugPrint()) Serial.println(F("Serial client detached."));
-    } else {
-      State.serial_client_attached_ = true;
+    State.serial_client_detected_ = true;
+    auto cmd = Serial.read();
+
+    switch (cmd) {
+      case CMD_STOP_FRAMES:
+        State.serial_client_attached_ = false;
+        break;
+
+      case CMD_START_FRAMES:
+        State.serial_client_attached_ = true;
+
+      default:
+        break;
     }
+
     Serial.flush();
   }
 

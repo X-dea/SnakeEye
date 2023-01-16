@@ -18,6 +18,13 @@ import 'dart:typed_data';
 
 import '../setting.dart';
 
+enum Command {
+  stopFrames,
+  startFrames,
+  getSettings,
+  saveSettings,
+}
+
 /// Represent a connection to device.
 abstract class Connection {
   /// Establish connection to device.

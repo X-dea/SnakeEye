@@ -15,11 +15,11 @@
 
 import 'dart:typed_data';
 
-import 'package:snake_eye/setting.dart';
 import 'package:usb_serial/transaction.dart';
 import 'package:usb_serial/usb_serial.dart';
 
 import '../common.dart';
+import '../setting.dart';
 import 'connection.dart';
 
 /// A connection to SnakeEye via serial port.

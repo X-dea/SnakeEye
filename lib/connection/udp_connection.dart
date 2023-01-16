@@ -64,7 +64,7 @@ class UdpConnection implements Connection {
       throw StateError('disconnected');
     }
 
-    _socket?.send([0x1], address, port);
+    _socket?.send([Command.startFrames.index], address, port);
 
     await for (var data in stream) {
       if (data.lengthInBytes != rawFrameLength) continue;
@@ -74,7 +74,7 @@ class UdpConnection implements Connection {
 
   @override
   Future<void> stopFrames() async {
-    _socket?.send([0x0], address, port);
+    _socket?.send([Command.stopFrames.index], address, port);
   }
 
   @override
@@ -92,12 +92,19 @@ class UdpConnection implements Connection {
         completer.complete(null);
       }
     });
-    _socket?.send([0x2], address, port);
+    _socket?.send([Command.getSettings.index], address, port);
     return completer.future;
   }
 
   @override
-  Future<void> saveSettings(SnakeEyeSettings settings) {
-    throw UnimplementedError();
+  Future<void> saveSettings(SnakeEyeSettings settings) async {
+    _socket?.send(
+      [
+        Command.saveSettings.index,
+        ...utf8.encode(jsonEncode(settings.toJson())),
+      ],
+      address,
+      port,
+    );
   }
 }

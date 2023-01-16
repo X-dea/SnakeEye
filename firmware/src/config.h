@@ -27,3 +27,8 @@
 
 #define DEFAULT_SSID "SnakeEye"
 #define DEFAULT_PASSWORD "5nakeEye"
+
+#define CMD_STOP_FRAMES 0
+#define CMD_START_FRAMES 1
+#define CMD_GET_SETTINGS 2
+#define CMD_SET_SETTINGS 3

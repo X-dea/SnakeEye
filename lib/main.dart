@@ -14,9 +14,9 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:snake_eye/connect_page.dart';
 
 import 'common.dart';
+import 'connect_page.dart';
 
 void main() {
   runApp(const App());
