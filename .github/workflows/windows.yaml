@@ -28,7 +28,7 @@ jobs:
         run: |
           git config --global core.longpaths true
           flutter build windows --release
-          Move-Item .\third_party\opencv-windows\build\x64\vc16\bin\opencv_world460.dll .\build\windows\runner\Release\opencv_world470.dll
+          Move-Item .\third_party\opencv-windows\build\x64\vc16\bin\opencv_world470.dll .\build\windows\runner\Release\opencv_world470.dll
       - uses: actions/upload-artifact@v3
         with:
           name: SnakeEye-Windows

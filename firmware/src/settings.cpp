@@ -18,6 +18,7 @@
 #include "settings.hpp"
 
 #include <EEPROM.h>
+#include <MLX90640_API.h>
 
 using namespace std;
 using namespace ARDUINOJSON_NAMESPACE;
@@ -30,6 +31,16 @@ const char* KEY_REFRESH_RATE_LEVEL = "refresh_rate_level";
 const char* KEY_SERIAL_BAUD_RATE = "serial_baud_rate";
 
 SnakeEyeSettings Settings;
+
+void SnakeEyeSettings::set_refresh_rate_level(uint8_t level) {
+  refresh_rate_level_ = level;
+  MLX90640_SetRefreshRate(MLX90640_I2C_ADDR, level);
+}
+
+void SnakeEyeSettings::set_serial_baud_rate(uint32_t baud_rate) {
+  serial_baud_rate_ = baud_rate;
+  Serial.begin(baud_rate);
+}
 
 void SnakeEyeSettings::Load() {
   EEPROM.begin(sizeof(Settings));
@@ -47,11 +58,39 @@ void SnakeEyeSettings::LoadFrom(Stream& stream) {
   StaticJsonDocument<128> json;
   deserializeJson(json, stream);
   if (version_ != json[KEY_VERSION]) return;
-  wifi_mode_ = static_cast<WifiMode>(json[KEY_WIFI_MODE].as<uint8_t>());
-  strncpy(ssid_, json[KEY_SSID].as<const char*>(), MAX_SSID_LENGTH);
-  strncpy(password_, json[KEY_PASSWORD].as<const char*>(), MAX_PASSWORD_LENGTH);
-  refresh_rate_level_ = json[KEY_REFRESH_RATE_LEVEL];
-  serial_baud_rate_ = json[KEY_SERIAL_BAUD_RATE];
+
+  auto need_restart = false;
+
+  auto wifi_mode = static_cast<WifiMode>(json[KEY_WIFI_MODE].as<uint8_t>());
+  if (wifi_mode != wifi_mode_) {
+    wifi_mode_ = wifi_mode;
+    need_restart = true;
+  }
+
+  auto ssid = json[KEY_SSID].as<const char*>();
+  if (strcmp(ssid, ssid_) != 0) {
+    strncpy(ssid_, ssid, MAX_SSID_LENGTH);
+    need_restart = true;
+  }
+
+  auto password = json[KEY_PASSWORD].as<const char*>();
+  if (strcmp(password, password_) != 0) {
+    strncpy(password_, password, MAX_PASSWORD_LENGTH);
+    need_restart = true;
+  }
+
+  auto refresh_rate_level = json[KEY_REFRESH_RATE_LEVEL].as<uint8_t>();
+  if (refresh_rate_level != refresh_rate_level_) {
+    set_refresh_rate_level(refresh_rate_level);
+  }
+
+  auto serial_baud_rate = json[KEY_SERIAL_BAUD_RATE].as<uint32_t>();
+  if (serial_baud_rate != serial_baud_rate_) {
+    set_serial_baud_rate(serial_baud_rate);
+  }
+
+  Save();
+  if (need_restart) ESP.restart();
 }
 
 size_t SnakeEyeSettings::writeTo(Stream& stream) {

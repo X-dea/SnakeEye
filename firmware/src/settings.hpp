@@ -38,6 +38,20 @@ class SnakeEyeSettings {
   uint32_t serial_baud_rate_ = 230400;
 
   /**
+   * @brief Set and apply the refresh rate level.
+   *
+   * @param level The refresh rate level.
+   */
+  void set_refresh_rate_level(uint8_t level);
+
+  /**
+   * @brief Set and apply the serial baud rate.
+   *
+   * @param baud_rate The serial baud rate.
+   */
+  void set_serial_baud_rate(uint32_t baud_rate);
+
+  /**
    * @brief Load settings from EEPROM.
    */
   void Load();
