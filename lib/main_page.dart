@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 
 import 'connect_page.dart';
 import 'connection/connection.dart';
+import 'firmware.dart';
 import 'opencv_page.dart';
 import 'pixels_page.dart';
 import 'setting.dart';
@@ -49,11 +50,6 @@ class MainPage extends StatelessWidget {
       body: ListView(
         children: [
           ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            onTap: () => SettingsDialog.show(context, connection),
-          ),
-          ListTile(
             leading: const Icon(Icons.pix),
             title: const Text('Pixels View'),
             onTap: () {
@@ -74,6 +70,16 @@ class MainPage extends StatelessWidget {
                 ),
               );
             },
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Settings'),
+            onTap: () => SettingsDialog.show(context, connection),
+          ),
+          ListTile(
+            leading: const Icon(Icons.memory),
+            title: const Text('Firmware'),
+            onTap: () => FirmwareDialog.show(context, connection),
           ),
         ],
       ),
