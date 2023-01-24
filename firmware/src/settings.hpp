@@ -17,9 +17,8 @@
 
 #pragma once
 
-#include <Arduino.h>
-
 #include <ArduinoJson.hpp>
+#include <cstdint>
 
 #include "config.h"
 

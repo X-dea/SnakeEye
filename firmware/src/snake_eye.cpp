@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ArduinoOTA.h>
 #include <ESP8266WiFi.h>
 #include <MLX90640_API.h>
 #include <MLX90640_I2C_Driver.h>
@@ -84,6 +85,7 @@ void setup() {
   }
 
   udp.begin(UDP_PORT);
+  ArduinoOTA.begin(false);
 }
 
 void loop() {
@@ -163,4 +165,6 @@ void loop() {
       }
     }
   }
+
+  ArduinoOTA.handle();
 }
