@@ -13,9 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import 'package:espota/espota.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'connection/connection.dart';
+import 'connection/udp_connection.dart';
 import 'setting.dart';
 
 class FirmwareDialog extends StatefulWidget {
@@ -35,11 +38,38 @@ class FirmwareDialog extends StatefulWidget {
 }
 
 class _FirmwareDialogState extends State<FirmwareDialog> {
+  static const bundledVersion = 10000;
   SnakeEyeSettings? _settings;
+  double? _progress;
 
   Future<void> _load() async {
     _settings = await widget.connection.settings;
     if (mounted) setState(() {});
+  }
+
+  Future<void> flash() async {
+    final address = (widget.connection as UdpConnection).address;
+    final fw = await rootBundle.load('res/firmware.bin');
+    if (mounted) setState(() => _progress = 0);
+
+    try {
+      await for (final progress
+          in await upgrade(address, fw.buffer.asUint8List())) {
+        if (mounted) setState(() => _progress = progress);
+      }
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Done'),
+        ));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.toString()),
+        ));
+      }
+    }
   }
 
   @override
@@ -56,15 +86,26 @@ class _FirmwareDialogState extends State<FirmwareDialog> {
     }
 
     return SimpleDialog(
-      title: const Text('Settings'),
+      title: const Text('Firmware'),
       contentPadding: const EdgeInsets.all(16),
       children: [
         ListTile(
-          title: const Text('Version'),
+          title: const Text('Current Version'),
           trailing: Text(
             '${settings.version ~/ 10000}.${settings.version % 10000 ~/ 100}.${settings.version % 100}',
           ),
         ),
+        if (widget.connection is UdpConnection)
+          ListTile(
+            title: const Text('Bundled Version'),
+            subtitle: const Text('Tap to flash.'),
+            trailing: _progress != null
+                ? CircularProgressIndicator(value: _progress)
+                : const Text(
+                    '${bundledVersion ~/ 10000}.${bundledVersion % 10000 ~/ 100}.${bundledVersion % 100}',
+                  ),
+            onTap: flash,
+          ),
       ],
     );
   }

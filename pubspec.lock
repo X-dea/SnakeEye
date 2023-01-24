@@ -217,6 +217,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.4"
+  espota:
+    dependency: "direct main"
+    description:
+      name: espota
+      sha256: c15aef710e6c649f0e67ef4cb116d02c7cda7b16f2c0fa70950f76b0299f0aa5
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   fake_async:
     dependency: transitive
     description:
