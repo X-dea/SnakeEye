@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:usb_serial/transaction.dart';
@@ -28,6 +30,7 @@ class SerialConnection implements Connection {
   final int baudRate;
 
   UsbPort? _port;
+  Stream<Uint8List>? _stream;
 
   factory SerialConnection(Uri uri) {
     assert(uri.scheme == 'serial');
@@ -53,29 +56,30 @@ class SerialConnection implements Connection {
       UsbPort.STOPBITS_1,
       UsbPort.PARITY_NONE,
     );
+
+    _stream = Transaction.terminated(
+      p.inputStream!,
+      Uint8List.fromList([0xF0, 0xF1]),
+    ).stream.asBroadcastStream();
   }
 
   @override
   Future<void> disconnect() async {
     await _port?.close();
     _port = null;
+    _stream = null;
   }
 
   @override
   Stream<Float32List> receiveFrames() async* {
-    final stream = _port?.inputStream;
+    final stream = _stream;
     if (stream == null) {
       throw StateError('disconnected');
     }
 
-    final transaction = Transaction.terminated(
-      stream,
-      Uint8List.fromList([0xF0, 0xF1]),
-    );
+    _port?.write(Uint8List.fromList([Command.startFrames.index]));
 
-    _port?.write(Uint8List.fromList([1]));
-
-    await for (var p in transaction.stream) {
+    await for (var p in stream) {
       if (p.lengthInBytes != rawFrameLength) return;
       yield p.buffer.asFloat32List();
     }
@@ -83,12 +87,24 @@ class SerialConnection implements Connection {
 
   @override
   Future<void> stopFrames() async {
-    await _port?.write(Uint8List.fromList([0x0]));
+    await _port?.write(Uint8List.fromList([Command.stopFrames.index]));
   }
 
   @override
   Future<SnakeEyeSettings?> get settings async {
-    throw UnimplementedError();
+    _port?.write(Uint8List.fromList([Command.getSettings.index]));
+    return _stream?.first.then((data) {
+      if (data.first == 123 && data.last == 125) {
+        try {
+          final json = jsonDecode(utf8.decode(data));
+          return SnakeEyeSettings.fromJson(json);
+        } catch (_) {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    });
   }
 
   @override

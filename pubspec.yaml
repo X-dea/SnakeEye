@@ -36,7 +36,7 @@ dependencies:
   espota: ^1.0.0
   ffi: ^2.0.0
   flutter_mobx: ^2.0.0
-  json_annotation: ^4.7.0
+  json_annotation: ^4.8.0
   mobx: ^2.0.0
   usb_serial:
     git: https://github.com/altera2015/usbserial
@@ -47,7 +47,7 @@ dev_dependencies:
 
   build_runner: ^2.0.0
   flutter_lints: ^2.0.0
-  json_serializable: ^6.0.0
+  json_serializable: ^6.6.0
   mobx_codegen: ^2.0.0
 
 # For information on the generic Dart part of this file, see the
