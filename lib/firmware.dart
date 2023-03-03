@@ -16,9 +16,9 @@
 import 'package:espota/espota.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ulink/ulink.dart';
 
-import 'connection/connection.dart';
-import 'connection/udp_connection.dart';
+import 'connection.dart';
 import 'setting.dart';
 
 class FirmwareDialog extends StatefulWidget {
@@ -48,7 +48,7 @@ class _FirmwareDialogState extends State<FirmwareDialog> {
   }
 
   Future<void> flash() async {
-    final address = (widget.connection as UdpConnection).address;
+    final address = (widget.connection.channel as UdpChannel).address;
     final fw = await rootBundle.load('res/firmware.bin');
     if (mounted) setState(() => _progress = 0);
 
@@ -95,7 +95,7 @@ class _FirmwareDialogState extends State<FirmwareDialog> {
             '${settings.version ~/ 10000}.${settings.version % 10000 ~/ 100}.${settings.version % 100}',
           ),
         ),
-        if (widget.connection is UdpConnection)
+        if (widget.connection.channel is UdpChannel)
           ListTile(
             title: const Text('Bundled Version'),
             subtitle: const Text('Tap to flash.'),

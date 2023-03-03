@@ -114,6 +114,7 @@ void loop() {
 
       case CMD_GET_SETTINGS:
         udp.beginPacket(udp.remoteIP(), udp.remotePort());
+        udp.write((uint8_t)CMD_GET_SETTINGS);
         Settings.writeTo(udp);
         udp.endPacket();
         break;
@@ -141,6 +142,7 @@ void loop() {
         break;
 
       case CMD_GET_SETTINGS:
+        Serial.write((uint8_t)CMD_GET_SETTINGS);
         Settings.writeTo(Serial);
         Serial.write(terminator, 2);
         break;
@@ -157,6 +159,7 @@ void loop() {
 
     if (State.udp_client_attached_) {
       udp.beginPacket(remote_ip, remote_port);
+      udp.write((uint8_t)CMD_START_FRAMES);
       udp.write((uint8_t*)mlx90640_temperature, 768 * 4);
       if (udp.endPacket()) {
         delay(10);  // Prevent IP fragment loss.
@@ -166,7 +169,8 @@ void loop() {
     }
 
     if (State.serial_client_attached_) {
-      if (!Serial.write((uint8_t*)mlx90640_temperature, 768 * 4) ||
+      if (!Serial.write((uint8_t)CMD_START_FRAMES) ||
+          !Serial.write((uint8_t*)mlx90640_temperature, 768 * 4) ||
           !Serial.write(terminator, 2)) {
         State.serial_client_attached_ = false;
       }

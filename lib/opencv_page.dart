@@ -23,7 +23,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart' hide Image;
 
 import 'common.dart';
-import 'connection/connection.dart';
+import 'connection.dart';
 
 class ImagePainter extends CustomPainter {
   final Image image;

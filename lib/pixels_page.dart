@@ -20,7 +20,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import 'common.dart';
-import 'connection/connection.dart';
+import 'connection.dart';
 import 'interpolation.dart';
 
 class PixelsPage extends StatefulWidget {

@@ -16,7 +16,7 @@
 import 'package:flutter/material.dart';
 
 import 'connect_page.dart';
-import 'connection/connection.dart';
+import 'connection.dart';
 import 'firmware.dart';
 import 'opencv_page.dart';
 import 'pixels_page.dart';

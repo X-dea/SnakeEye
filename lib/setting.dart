@@ -18,7 +18,7 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:mobx/mobx.dart';
 
-import 'connection/connection.dart';
+import 'connection.dart';
 
 part 'setting.g.dart';
 

@@ -14,11 +14,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
+import 'package:ulink/ulink.dart';
 import 'package:usb_serial/usb_serial.dart';
 
-import 'connection/connection.dart';
-import 'connection/serial_connection.dart';
-import 'connection/udp_connection.dart';
+import 'connection.dart';
 import 'main_page.dart';
 
 class ConnectPage extends StatefulWidget {
@@ -47,10 +46,17 @@ class _ConnectPageState extends State<ConnectPage> {
       final Connection connection;
       switch (uri.scheme) {
         case 'udp':
-          connection = UdpConnection(uri);
+          connection = Connection(channel: UdpChannel(uri));
           break;
         case 'serial':
-          connection = SerialConnection(uri);
+          connection = Connection(
+            channel: SerialChannel(
+              uri,
+              splitter: TerminatorSplitter(
+                terminator: [0xF0, 0xF1],
+              ),
+            ),
+          );
           break;
         default:
           throw const FormatException();
@@ -108,7 +114,7 @@ class _ConnectPageState extends State<ConnectPage> {
                       ),
                   ],
                   onChanged: (v) =>
-                      _addressController.text = 'serial://$v?baud_rate=460800',
+                      _addressController.text = 'serial://$v?baud_rate=230400',
                 ),
                 onTap: refreshUsbDevices,
               ),
