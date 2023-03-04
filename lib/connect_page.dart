@@ -32,11 +32,14 @@ class _ConnectPageState extends State<ConnectPage> {
     text: 'udp://192.168.4.1:55544',
   );
 
-  var _usbDevices = <UsbDevice>[];
-
-  Future<void> refreshUsbDevices() async {
-    _usbDevices = await UsbSerial.listDevices();
-    if (mounted) setState(() {});
+  void _serial() async {
+    final deviceId = await showDialog<int>(
+      context: context,
+      builder: (context) => const _SerialPortSelection(),
+    );
+    if (deviceId != null) {
+      _addressController.text = 'serial://$deviceId?baud_rate=230400';
+    }
   }
 
   void _connect() async {
@@ -105,20 +108,8 @@ class _ConnectPageState extends State<ConnectPage> {
                 ),
               ),
               ListTile(
-                title: const Text('Serial Ports'),
-                subtitle: const Text('Tap to refresh.'),
-                trailing: DropdownButton<int>(
-                  items: [
-                    for (final d in _usbDevices)
-                      DropdownMenuItem(
-                        value: d.deviceId,
-                        child: Text(d.deviceName),
-                      ),
-                  ],
-                  onChanged: (v) =>
-                      _addressController.text = 'serial://$v?baud_rate=230400',
-                ),
-                onTap: refreshUsbDevices,
+                title: const Text('Serial Port'),
+                onTap: _serial,
               ),
               const SizedBox(height: 8),
               FloatingActionButton(
@@ -129,6 +120,49 @@ class _ConnectPageState extends State<ConnectPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SerialPortSelection extends StatefulWidget {
+  const _SerialPortSelection();
+
+  @override
+  State<_SerialPortSelection> createState() => _SerialPortSelectionState();
+}
+
+class _SerialPortSelectionState extends State<_SerialPortSelection> {
+  List<UsbDevice>? _usbDevices;
+
+  Future<void> _refreshUsbDevices() async {
+    _usbDevices = await UsbSerial.listDevices();
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void initState() {
+    _refreshUsbDevices();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final usbDevices = _usbDevices;
+
+    if (usbDevices == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return SimpleDialog(
+      title: const Text('Serial Port'),
+      clipBehavior: Clip.hardEdge,
+      children: [
+        for (final device in usbDevices)
+          ListTile(
+            title: Text(device.deviceName),
+            onTap: () => Navigator.of(context).pop(device.deviceId),
+          ),
+      ],
     );
   }
 }
