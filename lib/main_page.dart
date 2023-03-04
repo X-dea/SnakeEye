@@ -15,7 +15,6 @@
 
 import 'package:flutter/material.dart';
 
-import 'connect_page.dart';
 import 'connection.dart';
 import 'firmware.dart';
 import 'opencv_page.dart';
@@ -32,18 +31,12 @@ class MainPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('SnakeEye'),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.link),
             tooltip: connection.runtimeType.toString(),
-            onPressed: () {
-              connection.disconnect();
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => const ConnectPage(),
-                ),
-              );
-            },
+            onPressed: () => Navigator.of(context).pop(),
           )
         ],
       ),

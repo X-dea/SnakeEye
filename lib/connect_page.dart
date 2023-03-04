@@ -46,7 +46,9 @@ class _ConnectPageState extends State<ConnectPage> {
       final Connection connection;
       switch (uri.scheme) {
         case 'udp':
-          connection = Connection(channel: UdpChannel(uri));
+          connection = Connection(
+            channel: UdpChannel(uri),
+          );
           break;
         case 'serial':
           connection = Connection(
@@ -63,12 +65,12 @@ class _ConnectPageState extends State<ConnectPage> {
       }
 
       connection.connect();
-
-      Navigator.of(context).pushReplacement(
+      await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => MainPage(connection: connection),
         ),
       );
+      connection.disconnect();
     } on FormatException catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid address.')),
