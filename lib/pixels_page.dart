@@ -13,11 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import 'dart:io';
+import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'common.dart';
 import 'connection.dart';
@@ -37,21 +39,22 @@ class PixelsPage extends StatefulWidget {
 
 class _PixelsPageState extends State<PixelsPage> {
   final tween = ColorTween(begin: Colors.blue, end: Colors.red);
-  late final int displayWidth;
-  late final int displayHeight;
-
   var maxTemp = -273.15;
   var minTemp = -273.15;
   var diff = 0.0;
-  var temps = Float32List(0);
+  var _scale = 1;
+  var _displayWidth = sensorWidth;
+  var _displayHeight = sensorHeight;
+  Float32List? _temps;
+  StreamSubscription? _framesSubscription;
 
   void processTemperatures(Float32List t) {
-    temps = t;
-    if (displayWidth != sensorWidth || displayHeight != sensorHeight) {
-      temps = interpolate(
+    var temps = _temps = t;
+    if (_displayWidth != sensorWidth || _displayHeight != sensorHeight) {
+      temps = _temps = interpolate(
         temps,
-        targetWidth: displayWidth,
-        targetHeight: displayHeight,
+        targetWidth: _displayWidth,
+        targetHeight: _displayHeight,
       );
     }
     maxTemp = temps.reduce(max);
@@ -61,52 +64,55 @@ class _PixelsPageState extends State<PixelsPage> {
     if (mounted) setState(() {});
   }
 
-  @override
-  void initState() {
-    displayWidth = sensorWidth;
-    displayHeight = sensorHeight;
-    widget.connection
+  void _initFrames() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    _framesSubscription = widget.connection
         .receiveFrames()
         .listen((event) => processTemperatures(event));
+  }
+
+  @override
+  void initState() {
+    _initFrames();
     super.initState();
   }
 
   @override
   void dispose() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     widget.connection.stopFrames();
+    _framesSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (diff == 0.0) return const Center(child: CircularProgressIndicator());
-
-    final sensorArea = LayoutBuilder(
+    final grids = LayoutBuilder(
       builder: (context, constraints) {
         final pixelExtent = min(
-          (constraints.maxWidth - 6) / displayWidth,
-          (constraints.maxHeight - 6) / displayHeight,
+          (constraints.maxWidth - 6) / _displayWidth,
+          (constraints.maxHeight - 6) / _displayHeight,
         );
 
         return GridView.builder(
           shrinkWrap: true,
           padding: EdgeInsets.symmetric(
             vertical: max(
-              3,
-              (constraints.maxHeight - (pixelExtent * displayHeight)) / 2,
+              0,
+              (constraints.maxHeight - (pixelExtent * _displayHeight)) / 2,
             ),
             horizontal: max(
-              3,
-              (constraints.maxWidth - (pixelExtent * displayWidth)) / 2,
+              0,
+              (constraints.maxWidth - (pixelExtent * _displayWidth)) / 2,
             ),
           ),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: displayWidth,
+            crossAxisCount: _displayWidth,
             mainAxisExtent: pixelExtent,
           ),
-          itemCount: displayWidth * displayHeight,
+          itemCount: _displayWidth * _displayHeight,
           itemBuilder: (context, i) {
-            final temp = temps[i];
+            final temp = _temps![i];
             final color = tween.lerp((temp - minTemp) / max(10, diff))!;
 
             return Container(
@@ -115,7 +121,7 @@ class _PixelsPageState extends State<PixelsPage> {
               decoration: BoxDecoration(
                 color: color,
                 border: temp == maxTemp
-                    ? Border.all(color: Colors.yellow, width: 2.0)
+                    ? Border.all(color: Colors.yellowAccent, width: 2.0)
                     : temp == minTemp
                         ? Border.all(color: Colors.cyanAccent, width: 2.0)
                         : null,
@@ -127,62 +133,64 @@ class _PixelsPageState extends State<PixelsPage> {
     );
 
     return Scaffold(
-      appBar: Platform.isAndroid
-          ? null
-          : AppBar(
-              title: const Text('Sensor'),
+      body: Stack(
+        children: [
+          if (_temps != null)
+            Directionality(
+              // Flip sensor around y-axis.
+              textDirection: TextDirection.rtl,
+              child: grids,
             ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: diff != 0.0
-                  ? Directionality(
-                      // Flip sensor around y-axis.
-                      textDirection: TextDirection.rtl,
-                      child: sensorArea,
-                    )
-                  : const Center(
-                      child: CircularProgressIndicator.adaptive(),
-                    ),
-            ),
-            if (diff != 0.0)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 70,
-                    child: Text(
-                      '${minTemp.toStringAsFixed(2)}°C',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      height: 10,
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.blue,
-                            Colors.red,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 170,
-                    child: Text(
-                      '${maxTemp.toStringAsFixed(2)}°C '
-                      'Delta: ${diff.toStringAsFixed(2)}°C',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
+          if (_temps != null)
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Container(
+                margin: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '↑ ${maxTemp.toStringAsFixed(2)}°C\n'
+                  '↓ ${minTemp.toStringAsFixed(2)}°C\n'
+                  'Δ ${diff.toStringAsFixed(2)}°C',
+                ),
               ),
-          ],
-        ),
+            ),
+          if (_temps == null)
+            const Center(
+              child: CircularProgressIndicator.adaptive(),
+            ),
+        ],
+      ),
+      floatingActionButton: SpeedDial(
+        mini: true,
+        renderOverlay: false,
+        children: [
+          SpeedDialChild(
+            child: const Icon(Icons.zoom_in_map),
+            onTap: () {
+              _scale = max(1, _scale - 1);
+              _displayWidth = sensorWidth * _scale;
+              _displayHeight = sensorHeight * _scale;
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.zoom_out_map),
+            onTap: () {
+              _scale = min(2, _scale + 1);
+              _displayWidth = sensorWidth * _scale;
+              _displayHeight = sensorHeight * _scale;
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.arrow_back),
+            onTap: () => Navigator.of(context).pop(),
+          ),
+        ],
+        activeChild: const Icon(Icons.close),
+        child: const Icon(Icons.construction),
       ),
     );
   }

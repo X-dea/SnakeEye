@@ -154,10 +154,6 @@ class _OpenCVPageState extends State<OpenCVPage> {
                 );
               }),
             ),
-          if (controller == null && image == null)
-            const Center(
-              child: CircularProgressIndicator.adaptive(),
-            ),
           if (image != null)
             Align(
               alignment: Alignment.bottomLeft,
@@ -174,6 +170,10 @@ class _OpenCVPageState extends State<OpenCVPage> {
                   'Δ ${diff.toStringAsFixed(2)}°C',
                 ),
               ),
+            ),
+          if (controller == null && image == null)
+            const Center(
+              child: CircularProgressIndicator.adaptive(),
             ),
         ],
       ),
