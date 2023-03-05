@@ -13,41 +13,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import 'dart:async';
 import 'dart:ffi' hide Size;
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart' hide Image;
+import 'package:flutter/services.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'common.dart';
 import 'connection.dart';
-
-class ImagePainter extends CustomPainter {
-  final Image image;
-  final double opacity;
-
-  const ImagePainter({
-    required this.image,
-    this.opacity = 1.0,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    paintImage(
-      canvas: canvas,
-      rect: Rect.fromLTWH(0, 0, size.width, size.height),
-      image: image,
-      fit: size.aspectRatio > ratio ? BoxFit.fitHeight : BoxFit.fitWidth,
-      opacity: opacity,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
 
 class OpenCVPage extends StatefulWidget {
   final Connection connection;
@@ -67,7 +45,11 @@ class _OpenCVPageState extends State<OpenCVPage> {
   var diff = 0.0;
 
   Image? image;
-  CameraController? controller;
+  StreamSubscription? _framesSubscription;
+
+  CameraController? _cameraController;
+  var _enableCameraControl = false;
+  var _cameraOffset = Offset.zero;
 
   void processTemperatures(Float32List temps) async {
     inputTemperatures
@@ -95,112 +77,137 @@ class _OpenCVPageState extends State<OpenCVPage> {
     );
   }
 
-  void initCamera() async {
-    final cameras = await availableCameras();
-    controller = CameraController(
-      cameras.first,
-      ResolutionPreset.max,
-      enableAudio: false,
-    );
-    await controller?.initialize();
+  void _initFrames() {
+    _framesSubscription = widget.connection
+        .receiveFrames()
+        .listen((event) => processTemperatures(event));
+  }
+
+  void _toggleCamera() async {
+    var controller = _cameraController;
+    if (controller == null) {
+      final cameras = await availableCameras();
+      controller = _cameraController = CameraController(
+        cameras.first,
+        ResolutionPreset.max,
+        enableAudio: false,
+      );
+      await controller.initialize();
+    } else {
+      _cameraController = null;
+      await controller.dispose();
+    }
     if (mounted) setState(() {});
   }
 
   @override
   void initState() {
-    widget.connection
-        .receiveFrames()
-        .listen((event) => processTemperatures(event));
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    _initFrames();
     super.initState();
   }
 
   @override
   void dispose() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     widget.connection.stopFrames();
+    _framesSubscription?.cancel();
+    _cameraController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final image = this.image;
-    final controller = this.controller;
+    final controller = _cameraController;
+    final isCameraInitialized =
+        controller != null && controller.value.isInitialized;
     return Scaffold(
-      appBar: Platform.isAndroid ? null : AppBar(title: const Text('Sensor')),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (controller != null && controller.value.isInitialized)
-                    Center(
-                      child: AspectRatio(
-                        aspectRatio: controller.value.aspectRatio,
-                        child: Transform.translate(
-                          offset: const Offset(-60, 0),
-                          child: CameraPreview(controller),
-                        ),
-                      ),
-                    ),
-                  if (image != null)
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        return CustomPaint(
-                          painter: ImagePainter(
-                            image: image,
-                            opacity: /* widget.cameraPreview ? 0.5 :*/ 1.0,
-                          ),
-                          size: constraints.biggest,
-                        );
-                      },
-                    ),
-                  if (controller == null && image == null)
-                    const Center(
-                      child: CircularProgressIndicator.adaptive(),
-                    ),
-                ],
+      body: Stack(
+        children: [
+          if (isCameraInitialized)
+            Center(
+              child: AspectRatio(
+                aspectRatio: controller.value.aspectRatio,
+                child: Transform.translate(
+                  offset: _cameraOffset,
+                  child: GestureDetector(
+                    onPanUpdate: (d) {
+                      if (_enableCameraControl) _cameraOffset += d.delta * 0.5;
+                    },
+                    child: CameraPreview(controller),
+                  ),
+                ),
               ),
             ),
-            if (image != null)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 70,
-                    child: Text(
-                      '${minTemp.toStringAsFixed(2)}°C',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      height: 10,
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Color.fromARGB(255, 0, 0, 255),
-                            Color.fromARGB(255, 0, 255, 255),
-                            Color.fromARGB(255, 255, 255, 0),
-                            Color.fromARGB(255, 255, 0, 0),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 170,
-                    child: Text(
-                      '${maxTemp.toStringAsFixed(2)}°C '
-                      'Delta: ${diff.toStringAsFixed(2)}°C',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
+          if (image != null)
+            IgnorePointer(
+              child: LayoutBuilder(builder: (context, constraints) {
+                return RawImage(
+                  image: image,
+                  opacity: isCameraInitialized
+                      ? const AlwaysStoppedAnimation(0.6)
+                      : null,
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  fit: BoxFit.contain,
+                );
+              }),
+            ),
+          if (controller == null && image == null)
+            const Center(
+              child: CircularProgressIndicator.adaptive(),
+            ),
+          if (image != null)
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Container(
+                margin: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '↑ ${maxTemp.toStringAsFixed(2)}°C\n'
+                  '↓ ${minTemp.toStringAsFixed(2)}°C\n'
+                  'Δ ${diff.toStringAsFixed(2)}°C',
+                ),
               ),
-          ],
-        ),
+            ),
+        ],
+      ),
+      floatingActionButton: SpeedDial(
+        mini: true,
+        renderOverlay: false,
+        children: [
+          if (controller != null)
+            SpeedDialChild(
+              child: Icon(
+                Icons.control_camera,
+                color: _enableCameraControl
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).iconTheme.color,
+              ),
+              onTap: () =>
+                  setState(() => _enableCameraControl = !_enableCameraControl),
+            ),
+          SpeedDialChild(
+            child: Icon(
+              Icons.camera_alt,
+              color: _cameraController != null
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).iconTheme.color,
+            ),
+            onTap: _toggleCamera,
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.arrow_back),
+            onTap: () => Navigator.of(context).pop(),
+          ),
+        ],
+        activeChild: const Icon(Icons.close),
+        child: const Icon(Icons.construction),
       ),
     );
   }

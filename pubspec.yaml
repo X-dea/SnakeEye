@@ -36,6 +36,7 @@ dependencies:
   espota: ^1.0.0
   ffi: ^2.0.0
   flutter_mobx: ^2.0.0
+  flutter_speed_dial: ^6.0.0
   json_annotation: ^4.8.0
   mobx: ^2.0.0
   ulink: ^0.0.1
