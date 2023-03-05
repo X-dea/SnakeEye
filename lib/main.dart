@@ -14,12 +14,19 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'common.dart';
 import 'connect_page.dart';
 
 void main() {
   runApp(const App());
+
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      systemNavigationBarColor: Colors.transparent,
+    ),
+  );
 
   // Initialize FFI.
   if (Platform.isAndroid) {
@@ -42,6 +49,11 @@ class App extends StatelessWidget {
       title: 'SnakeEye',
       theme: ThemeData(
         colorSchemeSeed: Colors.redAccent,
+        useMaterial3: true,
+      ),
+      darkTheme: ThemeData(
+        colorSchemeSeed: Colors.redAccent,
+        brightness: Brightness.dark,
         useMaterial3: true,
       ),
       themeMode: ThemeMode.system,
