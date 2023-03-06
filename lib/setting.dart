@@ -112,6 +112,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
       builder: (context) => SimpleDialog(
         title: const Text('Settings'),
         contentPadding: const EdgeInsets.all(16),
+        clipBehavior: Clip.hardEdge,
         children: [
           ListTile(
             title: const Text('Refresh Rate'),

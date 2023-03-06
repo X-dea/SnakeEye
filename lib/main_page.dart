@@ -16,7 +16,7 @@
 import 'package:flutter/material.dart';
 
 import 'connection.dart';
-import 'firmware.dart';
+import 'hardware_page.dart';
 import 'opencv_page.dart';
 import 'pixels_page.dart';
 import 'setting.dart';
@@ -71,8 +71,14 @@ class MainPage extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.memory),
-            title: const Text('Firmware'),
-            onTap: () => FirmwareDialog.show(context, connection),
+            title: const Text('Hardware'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => HardwarePage(connection: connection),
+                ),
+              );
+            },
           ),
         ],
       ),
