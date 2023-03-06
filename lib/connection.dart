@@ -26,11 +26,12 @@ enum Command {
   saveSettings,
 }
 
+/// Represent a connection to device.
 class Connection {
   final BinaryCodec<TypedMessage> codec;
   final BinaryChannel channel;
 
-  Connection({
+  const Connection({
     required this.channel,
     this.codec = const JSONTypedMessageBinaryCodec(),
   });

@@ -147,6 +147,10 @@ void loop() {
         Serial.write(terminator, 2);
         break;
 
+      case CMD_SET_SETTINGS:
+        Settings.LoadFrom(Serial);
+        break;
+
       default:
         break;
     }
