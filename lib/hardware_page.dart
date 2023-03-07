@@ -103,13 +103,14 @@ class _HardwarePageState extends State<HardwarePage> {
               ),
             ),
           ],
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              'Releases',
-              style: Theme.of(context).textTheme.titleMedium,
+          if (_releases.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'Releases',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
-          ),
           for (final release in _releases.entries)
             for (final file in release.value.entries)
               ListTile(
@@ -136,15 +137,28 @@ class _Flasher extends StatefulWidget {
   State<_Flasher> createState() => _FlasherState();
 }
 
-class _FlasherState extends State<_Flasher> {
-  double? _progress;
+class _FlasherState extends State<_Flasher>
+    with SingleTickerProviderStateMixin {
+  var _stage = 'Downloading...';
+  late AnimationController _progress;
 
   Future<void> _update() async {
     final resp = await get(Uri.parse(widget.url));
     final fw = resp.bodyBytes;
 
     if (mounted) {
-      setState(() => _progress = 0);
+      _stage = 'Waiting...';
+    } else {
+      return;
+    }
+
+    _progress.duration = const Duration(seconds: 10);
+    await _progress.forward();
+
+    if (mounted) {
+      _stage = 'Flashing...';
+      _progress.value = 0;
+      _progress.duration = const Duration(milliseconds: 100);
     } else {
       return;
     }
@@ -153,7 +167,7 @@ class _FlasherState extends State<_Flasher> {
     final progress = await upgrade(address, fw.buffer.asUint8List());
     try {
       await for (final p in progress) {
-        if (mounted) setState(() => _progress = p);
+        if (mounted) _progress.animateTo(p);
       }
       if (mounted) {
         Navigator.of(context).pop();
@@ -173,17 +187,27 @@ class _FlasherState extends State<_Flasher> {
 
   @override
   void initState() {
+    _progress = AnimationController(vsync: this)
+      ..addListener(() => setState(() {}));
     _update();
     super.initState();
   }
 
   @override
+  void dispose() {
+    _progress.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SimpleDialog(
-      title: Text(_progress == null ? 'Downloading' : 'Flashing'),
+      title: Text(_stage),
       contentPadding: const EdgeInsets.all(16),
       children: [
-        LinearProgressIndicator(value: _progress),
+        LinearProgressIndicator(
+          value: _progress.isDismissed ? null : _progress.value,
+        ),
       ],
     );
   }
