@@ -35,7 +35,7 @@ class MainPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.link),
-            tooltip: connection.runtimeType.toString(),
+            tooltip: connection.channel.runtimeType.toString(),
             onPressed: () => Navigator.of(context).pop(),
           )
         ],
