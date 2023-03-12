@@ -1,6 +1,10 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
+#ifdef ESP32
+#include <WiFi.h>
+#else
 #include <ESP8266WiFi.h>
+#endif
 #include <MLX90640_API.h>
 #include <MLX90640_I2C_Driver.h>
 #include <WiFiUdp.h>
@@ -51,7 +55,7 @@ void setup() {
     WiFi.begin(Settings.ssid_, Settings.password_);
   }
 
-  MLX90640_I2CInit();
+  MLX90640_I2CInit(PIN_SDA, PIN_SCL);
   MLX90640_I2CFreqSet(400);
 
   uint16_t mlx90640_eeprom[832];
@@ -86,8 +90,9 @@ void setup() {
     Serial.println(WiFi.localIP());
   }
 
-  udp.begin(UDP_PORT);
-  ArduinoOTA.begin(false);
+  udp.begin(PORT_UDP);
+  ArduinoOTA.setPort(PORT_OTA);
+  ArduinoOTA.begin();
 }
 
 void loop() {

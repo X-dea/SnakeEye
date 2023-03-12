@@ -19,7 +19,7 @@
 
 #include <Wire.h>
 
-void MLX90640_I2CInit() { Wire.begin(); }
+void MLX90640_I2CInit(int sda, int scl) { Wire.begin(sda, scl); }
 
 int MLX90640_I2CGeneralReset() { return 0; }
 
@@ -39,8 +39,9 @@ int MLX90640_I2CRead(uint8_t slave_addr, uint16_t start_addr,
       return -1;
     }
 
-    uint8_t chunked_bytes =
-        remaining_bytes > BUFFER_LENGTH ? BUFFER_LENGTH : remaining_bytes;
+    uint8_t chunked_bytes = remaining_bytes > I2C_BUFFER_LENGTH
+                                ? I2C_BUFFER_LENGTH
+                                : remaining_bytes;
 
     Wire.requestFrom(slave_addr, chunked_bytes);
     if (Wire.available()) {

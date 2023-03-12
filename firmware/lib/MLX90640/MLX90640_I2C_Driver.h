@@ -19,7 +19,7 @@
 
 #include <stdint.h>
 
-void MLX90640_I2CInit();
+void MLX90640_I2CInit(int sda, int scl);
 int MLX90640_I2CGeneralReset();
 void MLX90640_I2CFreqSet(int freq);
 int MLX90640_I2CRead(uint8_t slave_addr, uint16_t start_addr,

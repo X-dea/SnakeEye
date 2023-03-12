@@ -17,10 +17,19 @@
 
 #pragma once
 
+#ifdef ESP32
+// Arduino core for ESP32 doesn't support C++14 yet.
+#define VERSION 10000U
+#else
 #define VERSION 1'00'00U
+#endif
+
+#define PIN_SDA 4U
+#define PIN_SCL 5U
 
 #define MLX90640_I2C_ADDR 0x33
-#define UDP_PORT 55544
+#define PORT_UDP 55544
+#define PORT_OTA 8266
 
 #define MAX_SSID_LENGTH 32
 #define MAX_PASSWORD_LENGTH 32
