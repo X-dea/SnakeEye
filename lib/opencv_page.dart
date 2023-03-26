@@ -50,6 +50,7 @@ class _OpenCVPageState extends State<OpenCVPage> {
   CameraController? _cameraController;
   var _enableCameraControl = false;
   var _cameraOffset = Offset.zero;
+  var _cameraScale = 1.0;
 
   void processTemperatures(Float32List temps) async {
     inputTemperatures
@@ -131,11 +132,20 @@ class _OpenCVPageState extends State<OpenCVPage> {
                 aspectRatio: controller.value.aspectRatio,
                 child: Transform.translate(
                   offset: _cameraOffset,
-                  child: GestureDetector(
-                    onPanUpdate: (d) {
-                      if (_enableCameraControl) _cameraOffset += d.delta * 0.5;
-                    },
-                    child: CameraPreview(controller),
+                  child: Transform.scale(
+                    scale: _cameraScale,
+                    child: GestureDetector(
+                      onScaleUpdate: (d) {
+                        if (!_enableCameraControl) return;
+                        if (d.pointerCount == 1) {
+                          _cameraOffset += d.focalPointDelta * 0.5;
+                        } else {
+                          _cameraScale += (d.scale - 1) * 0.005;
+                          _cameraScale = _cameraScale.clamp(0.5, 2);
+                        }
+                      },
+                      child: CameraPreview(controller),
+                    ),
                   ),
                 ),
               ),
