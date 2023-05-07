@@ -85,7 +85,7 @@ class SnakeEyeSettings {
   size_t writeTo(char* buffer, size_t buffer_size);
 
  private:
-  ARDUINOJSON_NAMESPACE::StaticJsonDocument<128> toJson();
+  ArduinoJson::StaticJsonDocument<128> toJson();
 };
 
 extern SnakeEyeSettings Settings;

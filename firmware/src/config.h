@@ -17,12 +17,7 @@
 
 #pragma once
 
-#ifdef ESP32
-// Arduino core for ESP32 doesn't support C++14 yet.
-#define VERSION 10000U
-#else
 #define VERSION 1'00'00U
-#endif
 
 #define PIN_SDA 4U
 #define PIN_SCL 5U

@@ -21,7 +21,7 @@
 #include <MLX90640_API.h>
 
 using namespace std;
-using namespace ARDUINOJSON_NAMESPACE;
+using namespace ArduinoJson;
 
 const char* KEY_VERSION = "version";
 const char* KEY_WIFI_MODE = "wifi_mode";
