@@ -32,13 +32,6 @@ class MainPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('SnakeEye'),
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.link),
-            tooltip: connection.channel.runtimeType.toString(),
-            onPressed: () => Navigator.of(context).pop(),
-          )
-        ],
       ),
       body: ListView(
         children: [
@@ -81,6 +74,11 @@ class MainPage extends StatelessWidget {
             },
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: connection.channel.runtimeType.toString(),
+        onPressed: () => Navigator.of(context).pop(),
+        child: const Icon(Icons.link_off),
       ),
     );
   }

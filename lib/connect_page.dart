@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:ulink/ulink.dart';
 import 'package:usb_serial/usb_serial.dart';
@@ -107,10 +109,11 @@ class _ConnectPageState extends State<ConnectPage> {
                   ),
                 ),
               ),
-              ListTile(
-                title: const Text('Serial Port'),
-                onTap: _serial,
-              ),
+              if (Platform.isAndroid)
+                ListTile(
+                  title: const Text('Serial Port'),
+                  onTap: _serial,
+                ),
               const SizedBox(height: 8),
               FloatingActionButton(
                 onPressed: _connect,
