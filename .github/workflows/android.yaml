@@ -1,0 +1,39 @@
+name: Android Client
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/android.yaml
+      - lib/**
+      - android/**
+      - pubspec.yaml
+      - pubspec.lock
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "microsoft"
+          java-version: "11"
+          java-package: jdk
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: beta
+      - name: Setup OpenCV
+        run: |
+          wget "https://github.com/opencv/opencv/releases/download/4.8.0/opencv-4.8.0-android-sdk.zip" -O ./third_party/opencv-android/opencv.zip
+          unzip ./third_party/opencv-android/opencv.zip -d ./third_party/opencv-android/
+          mv ./third_party/opencv-android/OpenCV-android-sdk/sdk ./third_party/opencv-android/sdk
+      - name: Build
+        run: flutter build apk --release
+      - uses: actions/upload-artifact@v3
+        with:
+          name: SnakeEye-android
+          path: build/app/outputs/flutter-apk/app-release.apk

@@ -77,13 +77,17 @@ class _ConnectPageState extends State<ConnectPage> {
       );
       connection.disconnect();
     } on FormatException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid address.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid address.')),
+        );
+      }
     } on ArgumentError catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid address.')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid address.')),
+        );
+      }
     }
   }
 

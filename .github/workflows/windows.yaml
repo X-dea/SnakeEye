@@ -21,15 +21,15 @@ jobs:
           channel: beta
       - name: Setup OpenCV
         run: |
-          Start-BitsTransfer -Source "https://github.com/opencv/opencv/releases/download/4.7.0/opencv-4.7.0-windows.exe" -Destination ".\third_party\opencv.exe"
+          Start-BitsTransfer -Source "https://github.com/opencv/opencv/releases/download/4.8.0/opencv-4.8.0-windows.exe" -Destination ".\third_party\opencv.exe"
           Start-Process -FilePath .\third_party\opencv.exe -ArgumentList "-y" -Wait
           Move-Item .\third_party\opencv\build .\third_party\opencv-windows\build
       - name: Build
         run: |
           git config --global core.longpaths true
           flutter build windows --release
-          Move-Item .\third_party\opencv-windows\build\x64\vc16\bin\opencv_world470.dll .\build\windows\runner\Release\opencv_world470.dll
+          Move-Item .\third_party\opencv-windows\build\x64\vc16\bin\opencv_world480.dll .\build\windows\runner\Release\opencv_world480.dll
       - uses: actions/upload-artifact@v3
         with:
-          name: SnakeEye-Windows
+          name: SnakeEye-win
           path: build/windows/runner/Release
