@@ -14,17 +14,20 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:mobx/mobx.dart';
 
 import 'connection.dart';
 
 part 'setting.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class SnakeEyeSettings extends _SnakeEyeSettings with _$SnakeEyeSettings {
+class SnakeEyeSettings {
   final int version;
+  int wifiMode = 0;
+  String ssid = 'SnakeEye';
+  String password = '5nakeEye';
+  int? refreshRateLevel;
+  int? serialBaudRate;
 
   SnakeEyeSettings(this.version);
 
@@ -32,23 +35,6 @@ class SnakeEyeSettings extends _SnakeEyeSettings with _$SnakeEyeSettings {
       _$SnakeEyeSettingsFromJson(json);
 
   Map<String, dynamic> toJson() => _$SnakeEyeSettingsToJson(this);
-}
-
-abstract class _SnakeEyeSettings with Store {
-  @observable
-  int wifiMode = 0;
-
-  @observable
-  String ssid = 'SnakeEye';
-
-  @observable
-  String password = '5nakeEye';
-
-  @observable
-  int? refreshRateLevel;
-
-  @observable
-  int? serialBaudRate;
 }
 
 class SettingsDialog extends StatefulWidget {
@@ -108,82 +94,79 @@ class _SettingsDialogState extends State<SettingsDialog> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return Observer(
-      builder: (context) => SimpleDialog(
-        title: const Text('Settings'),
-        contentPadding: const EdgeInsets.all(16),
-        clipBehavior: Clip.hardEdge,
-        children: [
-          ListTile(
-            title: const Text('Refresh Rate'),
-            trailing: DropdownButton<int>(
-              value: settings.refreshRateLevel,
-              items: _refreshRateMap.entries
-                  .map((e) => DropdownMenuItem(
-                        value: e.key,
-                        child: Text(e.value),
-                      ))
-                  .toList(),
-              onChanged: (v) => settings.refreshRateLevel = v!,
-            ),
+    return SimpleDialog(
+      title: const Text('Settings'),
+      contentPadding: const EdgeInsets.all(16),
+      clipBehavior: Clip.hardEdge,
+      children: [
+        ListTile(
+          title: const Text('Refresh Rate'),
+          trailing: DropdownButton<int>(
+            value: settings.refreshRateLevel,
+            items: _refreshRateMap.entries
+                .map((e) => DropdownMenuItem(
+                      value: e.key,
+                      child: Text(e.value),
+                    ))
+                .toList(),
+            onChanged: (v) => setState(() => settings.refreshRateLevel = v!),
           ),
-          ListTile(
-            title: const Text('Serial Baud Rate'),
-            trailing: DropdownButton<int>(
-              value: settings.serialBaudRate,
-              items: _supportedSerialBaudRates
-                  .map((e) => DropdownMenuItem(
-                        value: e,
-                        child: Text(e.toString()),
-                      ))
-                  .toList(),
-              onChanged: (v) => settings.serialBaudRate = v!,
-            ),
+        ),
+        ListTile(
+          title: const Text('Serial Baud Rate'),
+          trailing: DropdownButton<int>(
+            value: settings.serialBaudRate,
+            items: _supportedSerialBaudRates
+                .map((e) => DropdownMenuItem(
+                      value: e,
+                      child: Text(e.toString()),
+                    ))
+                .toList(),
+            onChanged: (v) => setState(() => settings.serialBaudRate = v!),
           ),
-          ListTile(
-            title: const Text('WiFi Mode'),
-            trailing: DropdownButton<int>(
-              value: settings.wifiMode,
-              items: const [
-                DropdownMenuItem(value: 0, child: Text('AP')),
-                DropdownMenuItem(value: 1, child: Text('STA')),
-              ],
-              onChanged: (v) => settings.wifiMode = v!,
-            ),
-          ),
-          TextFormField(
-            initialValue: settings.ssid,
-            maxLength: 30,
-            decoration: const InputDecoration(labelText: 'WiFi SSID'),
-            validator: (v) => v == null || v.isEmpty || v.length >= 30
-                ? 'Invalid SSID'
-                : null,
-            onChanged: (v) => settings.ssid = v,
-          ),
-          TextFormField(
-            initialValue: settings.password,
-            maxLength: 30,
-            decoration: const InputDecoration(labelText: 'WiFi Password'),
-            validator: (v) => v == null || v.length < 8 || v.length >= 30
-                ? 'Invalid password'
-                : null,
-            onChanged: (v) => settings.password = v,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: _save,
-                child: const Text('Save'),
-              ),
+        ),
+        ListTile(
+          title: const Text('WiFi Mode'),
+          trailing: DropdownButton<int>(
+            value: settings.wifiMode,
+            items: const [
+              DropdownMenuItem(value: 0, child: Text('AP')),
+              DropdownMenuItem(value: 1, child: Text('STA')),
             ],
-          )
-        ],
-      ),
+            onChanged: (v) => setState(() => settings.wifiMode = v!),
+          ),
+        ),
+        TextFormField(
+          initialValue: settings.ssid,
+          maxLength: 30,
+          decoration: const InputDecoration(labelText: 'WiFi SSID'),
+          validator: (v) =>
+              v == null || v.isEmpty || v.length >= 30 ? 'Invalid SSID' : null,
+          onChanged: (v) => settings.ssid = v,
+        ),
+        TextFormField(
+          initialValue: settings.password,
+          maxLength: 30,
+          decoration: const InputDecoration(labelText: 'WiFi Password'),
+          validator: (v) => v == null || v.length < 8 || v.length >= 30
+              ? 'Invalid password'
+              : null,
+          onChanged: (v) => settings.password = v,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: _save,
+              child: const Text('Save'),
+            ),
+          ],
+        )
+      ],
     );
   }
 }

@@ -35,11 +35,9 @@ dependencies:
   camera: ^0.10.1
   espota: ^1.0.0
   ffi: ^2.0.0
-  flutter_mobx: ^2.0.0
   flutter_speed_dial: ^7.0.0
   http: ^1.1.0
   json_annotation: ^4.8.0
-  mobx: ^2.0.0
   ulink: ^0.0.1
   usb_serial: ^0.4.0
 
@@ -50,7 +48,6 @@ dev_dependencies:
   build_runner: ^2.0.0
   flutter_lints: ^2.0.0
   json_serializable: ^6.6.0
-  mobx_codegen: ^2.0.0
 
 dependency_overrides:
   usb_serial:
