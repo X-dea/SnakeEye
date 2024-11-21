@@ -93,7 +93,7 @@ BEGIN
             VALUE "FileDescription", "SnakeEye" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "SnakeEye" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2021-2023 Xdea. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2021-2024 Xdea. All rights reserved." "\0"
             VALUE "OriginalFilename", "SnakeEye.exe" "\0"
             VALUE "ProductName", "SnakeEye" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

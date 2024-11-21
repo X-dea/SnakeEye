@@ -29,9 +29,9 @@ class PixelsPage extends StatefulWidget {
   final Connection connection;
 
   const PixelsPage({
-    Key? key,
+    super.key,
     required this.connection,
-  }) : super(key: key);
+  });
 
   @override
   State<PixelsPage> createState() => _PixelsPageState();
@@ -148,7 +148,7 @@ class _PixelsPageState extends State<PixelsPage> {
                 margin: const EdgeInsets.all(8),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor.withOpacity(0.6),
+                  color: Theme.of(context).cardColor.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

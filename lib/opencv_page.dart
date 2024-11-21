@@ -31,9 +31,9 @@ class OpenCVPage extends StatefulWidget {
   final Connection connection;
 
   const OpenCVPage({
-    Key? key,
+    super.key,
     required this.connection,
-  }) : super(key: key);
+  });
 
   @override
   State<OpenCVPage> createState() => _OpenCVPageState();
@@ -171,7 +171,7 @@ class _OpenCVPageState extends State<OpenCVPage> {
                 margin: const EdgeInsets.all(8),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor.withOpacity(0.6),
+                  color: Theme.of(context).cardColor.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(

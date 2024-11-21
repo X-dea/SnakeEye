@@ -31,10 +31,10 @@ class Connection {
   final BinaryCodec<TypedMessage> codec;
   final BinaryChannel channel;
 
-  const Connection({
+  Connection({
     required this.channel,
-    this.codec = const JSONTypedMessageBinaryCodec(),
-  });
+    BinaryCodec<TypedMessage>? codec,
+  }) : codec = codec ?? TypedMessageBinaryCodec();
 
   /// Establish connection to device.
   Future<void> connect() async {
