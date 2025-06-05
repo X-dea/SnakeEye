@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jason C.H.
+// Copyright (C) 2020-2025 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,10 +28,7 @@ import 'interpolation.dart';
 class PixelsPage extends StatefulWidget {
   final Connection connection;
 
-  const PixelsPage({
-    super.key,
-    required this.connection,
-  });
+  const PixelsPage({super.key, required this.connection});
 
   @override
   State<PixelsPage> createState() => _PixelsPageState();
@@ -66,9 +63,9 @@ class _PixelsPageState extends State<PixelsPage> {
 
   void _initFrames() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    _framesSubscription = widget.connection
-        .receiveFrames()
-        .listen((event) => processTemperatures(event));
+    _framesSubscription = widget.connection.receiveFrames().listen(
+      (event) => processTemperatures(event),
+    );
   }
 
   @override
@@ -123,8 +120,8 @@ class _PixelsPageState extends State<PixelsPage> {
                 border: temp == maxTemp
                     ? Border.all(color: Colors.yellowAccent, width: 2.0)
                     : temp == minTemp
-                        ? Border.all(color: Colors.cyanAccent, width: 2.0)
-                        : null,
+                    ? Border.all(color: Colors.cyanAccent, width: 2.0)
+                    : null,
               ),
             );
           },
@@ -159,9 +156,7 @@ class _PixelsPageState extends State<PixelsPage> {
               ),
             ),
           if (_temps == null)
-            const Center(
-              child: CircularProgressIndicator.adaptive(),
-            ),
+            const Center(child: CircularProgressIndicator.adaptive()),
         ],
       ),
       floatingActionButton: SpeedDial(

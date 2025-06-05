@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020-2023 Jason C.H.
+ * Copyright (C) 2020-2025 Jason C.H.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,7 +85,7 @@ class SnakeEyeSettings {
   size_t writeTo(char* buffer, size_t buffer_size);
 
  private:
-  ArduinoJson::StaticJsonDocument<128> toJson();
+  ArduinoJson::JsonDocument toJson();
 };
 
 extern SnakeEyeSettings Settings;

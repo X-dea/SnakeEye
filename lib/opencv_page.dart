@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jason C.H.
+// Copyright (C) 2020-2025 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -30,10 +30,7 @@ import 'connection.dart';
 class OpenCVPage extends StatefulWidget {
   final Connection connection;
 
-  const OpenCVPage({
-    super.key,
-    required this.connection,
-  });
+  const OpenCVPage({super.key, required this.connection});
 
   @override
   State<OpenCVPage> createState() => _OpenCVPageState();
@@ -79,9 +76,9 @@ class _OpenCVPageState extends State<OpenCVPage> {
   }
 
   void _initFrames() {
-    _framesSubscription = widget.connection
-        .receiveFrames()
-        .listen((event) => processTemperatures(event));
+    _framesSubscription = widget.connection.receiveFrames().listen(
+      (event) => processTemperatures(event),
+    );
   }
 
   void _toggleCamera() async {
@@ -152,17 +149,19 @@ class _OpenCVPageState extends State<OpenCVPage> {
             ),
           if (image != null)
             IgnorePointer(
-              child: LayoutBuilder(builder: (context, constraints) {
-                return RawImage(
-                  image: image,
-                  opacity: isCameraInitialized
-                      ? const AlwaysStoppedAnimation(0.6)
-                      : null,
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  fit: BoxFit.contain,
-                );
-              }),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return RawImage(
+                    image: image,
+                    opacity: isCameraInitialized
+                        ? const AlwaysStoppedAnimation(0.6)
+                        : null,
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    fit: BoxFit.contain,
+                  );
+                },
+              ),
             ),
           if (image != null)
             Align(
@@ -182,9 +181,7 @@ class _OpenCVPageState extends State<OpenCVPage> {
               ),
             ),
           if (controller == null && image == null)
-            const Center(
-              child: CircularProgressIndicator.adaptive(),
-            ),
+            const Center(child: CircularProgressIndicator.adaptive()),
         ],
       ),
       floatingActionButton: SpeedDial(

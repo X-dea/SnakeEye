@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jason C.H.
+// Copyright (C) 2020-2025 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -62,12 +62,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     5: '16Hz',
   };
 
-  static final _supportedSerialBaudRates = [
-    115200,
-    230400,
-    460800,
-    921600,
-  ];
+  static final _supportedSerialBaudRates = [115200, 230400, 460800, 921600];
 
   SnakeEyeSettings? _settings;
 
@@ -104,10 +99,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
           trailing: DropdownButton<int>(
             value: settings.refreshRateLevel,
             items: _refreshRateMap.entries
-                .map((e) => DropdownMenuItem(
-                      value: e.key,
-                      child: Text(e.value),
-                    ))
+                .map(
+                  (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
+                )
                 .toList(),
             onChanged: (v) => setState(() => settings.refreshRateLevel = v!),
           ),
@@ -117,10 +111,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
           trailing: DropdownButton<int>(
             value: settings.serialBaudRate,
             items: _supportedSerialBaudRates
-                .map((e) => DropdownMenuItem(
-                      value: e,
-                      child: Text(e.toString()),
-                    ))
+                .map(
+                  (e) => DropdownMenuItem(value: e, child: Text(e.toString())),
+                )
                 .toList(),
             onChanged: (v) => setState(() => settings.serialBaudRate = v!),
           ),
@@ -160,12 +153,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
-            TextButton(
-              onPressed: _save,
-              child: const Text('Save'),
-            ),
+            TextButton(onPressed: _save, child: const Text('Save')),
           ],
-        )
+        ),
       ],
     );
   }

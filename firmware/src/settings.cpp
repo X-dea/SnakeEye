@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2020-2023 Jason C.H.
+ * Copyright (C) 2020-2025 Jason C.H.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ void SnakeEyeSettings::Save() {
 }
 
 void SnakeEyeSettings::LoadFrom(Stream& stream) {
-  StaticJsonDocument<192> json;
+  JsonDocument json;
   deserializeJson(json, stream);
   if (version_ != json[KEY_VERSION]) return;
 
@@ -103,8 +103,8 @@ size_t SnakeEyeSettings::writeTo(char* buffer, size_t buffer_size) {
   return serializeJson(json, buffer, buffer_size);
 }
 
-StaticJsonDocument<128> SnakeEyeSettings::toJson() {
-  StaticJsonDocument<128> json;
+JsonDocument SnakeEyeSettings::toJson() {
+  JsonDocument json;
   json[KEY_VERSION] = version_;
   json[KEY_WIFI_MODE] = static_cast<uint8_t>(wifi_mode_);
   json[KEY_SSID] = ssid_;
