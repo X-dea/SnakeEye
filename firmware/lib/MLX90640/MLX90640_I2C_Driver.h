@@ -1,6 +1,6 @@
 /**
  * @copyright (C) 2017 Melexis N.V.
- * @copyright (C) 2021-2023 Jason C.H.
+ * @copyright (C) 2021-2025 Jason C.H.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jason C.H.
+// Copyright (C) 2020-2025 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -64,10 +64,7 @@ class _HardwarePageState extends State<HardwarePage> {
 
     await showDialog(
       context: context,
-      builder: (context) => _Flasher(
-        connection: conn,
-        url: url,
-      ),
+      builder: (context) => _Flasher(connection: conn, url: url),
     );
   }
 
@@ -83,9 +80,7 @@ class _HardwarePageState extends State<HardwarePage> {
     final settings = _settings;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Hardware'),
-      ),
+      appBar: AppBar(title: const Text('Hardware')),
       body: ListView(
         children: [
           if (settings != null) ...[
@@ -128,10 +123,7 @@ class _Flasher extends StatefulWidget {
   final Connection connection;
   final String url;
 
-  const _Flasher({
-    required this.connection,
-    required this.url,
-  });
+  const _Flasher({required this.connection, required this.url});
 
   @override
   State<_Flasher> createState() => _FlasherState();
@@ -171,16 +163,20 @@ class _FlasherState extends State<_Flasher>
       }
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Done'),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Done'),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e.toString()),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+          ),
+        );
       }
     }
   }

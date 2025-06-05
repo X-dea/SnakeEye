@@ -7,9 +7,7 @@ part of 'setting.dart';
 // **************************************************************************
 
 SnakeEyeSettings _$SnakeEyeSettingsFromJson(Map<String, dynamic> json) =>
-    SnakeEyeSettings(
-      json['version'] as int,
-    )
+    SnakeEyeSettings(json['version'] as int)
       ..wifiMode = json['wifi_mode'] as int
       ..ssid = json['ssid'] as String
       ..password = json['password'] as String

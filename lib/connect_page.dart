@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jason C.H.
+// Copyright (C) 2020-2025 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -51,17 +51,13 @@ class _ConnectPageState extends State<ConnectPage> {
       final Connection connection;
       switch (uri.scheme) {
         case 'udp':
-          connection = Connection(
-            channel: UdpChannel(uri),
-          );
+          connection = Connection(channel: UdpChannel(uri));
           break;
         case 'serial':
           connection = Connection(
             channel: SerialChannel(
               uri,
-              splitter: TerminatorSplitter(
-                terminator: [0xF0, 0xF1],
-              ),
+              splitter: TerminatorSplitter(terminator: [0xF0, 0xF1]),
             ),
           );
           break;
@@ -78,15 +74,15 @@ class _ConnectPageState extends State<ConnectPage> {
       connection.disconnect();
     } on FormatException catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid address.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Invalid address.')));
       }
     } on ArgumentError catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid address.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Invalid address.')));
       }
     }
   }
@@ -94,9 +90,7 @@ class _ConnectPageState extends State<ConnectPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Connect to SnakeEye'),
-      ),
+      appBar: AppBar(title: const Text('Connect to SnakeEye')),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
@@ -114,15 +108,12 @@ class _ConnectPageState extends State<ConnectPage> {
                 ),
               ),
               if (Platform.isAndroid)
-                ListTile(
-                  title: const Text('Serial Port'),
-                  onTap: _serial,
-                ),
+                ListTile(title: const Text('Serial Port'), onTap: _serial),
               const SizedBox(height: 8),
               FloatingActionButton(
                 onPressed: _connect,
                 child: const Icon(Icons.link),
-              )
+              ),
             ],
           ),
         ),

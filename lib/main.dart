@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jason C.H.
+// Copyright (C) 2020-2025 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,9 +23,7 @@ void main() {
   runApp(const App());
 
   SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.transparent,
-    ),
+    const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent),
   );
 
   // Initialize FFI.
@@ -35,9 +33,11 @@ void main() {
     lib = DynamicLibrary.executable();
   }
 
-  processImage = lib.lookupFunction<
-      Void Function(Pointer<Uint8>, Pointer<Uint8>),
-      void Function(Pointer<Uint8>, Pointer<Uint8>)>('ProcessImage');
+  processImage = lib
+      .lookupFunction<
+        Void Function(Pointer<Uint8>, Pointer<Uint8>),
+        void Function(Pointer<Uint8>, Pointer<Uint8>)
+      >('ProcessImage');
 }
 
 class App extends StatelessWidget {
@@ -47,10 +47,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'SnakeEye',
-      theme: ThemeData(
-        colorSchemeSeed: Colors.redAccent,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(colorSchemeSeed: Colors.redAccent, useMaterial3: true),
       darkTheme: ThemeData(
         colorSchemeSeed: Colors.redAccent,
         brightness: Brightness.dark,

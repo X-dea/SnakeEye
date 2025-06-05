@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Jason C.H.
+// Copyright (C) 2020-2025 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,22 +19,15 @@ import 'package:ulink/ulink.dart';
 
 import 'setting.dart';
 
-enum Command {
-  stopFrames,
-  startFrames,
-  getSettings,
-  saveSettings,
-}
+enum Command { stopFrames, startFrames, getSettings, saveSettings }
 
 /// Represent a connection to device.
 class Connection {
   final BinaryCodec<TypedMessage> codec;
   final BinaryChannel channel;
 
-  Connection({
-    required this.channel,
-    BinaryCodec<TypedMessage>? codec,
-  }) : codec = codec ?? TypedMessageBinaryCodec();
+  Connection({required this.channel, BinaryCodec<TypedMessage>? codec})
+    : codec = codec ?? TypedMessageBinaryCodec();
 
   /// Establish connection to device.
   Future<void> connect() async {
@@ -49,9 +42,7 @@ class Connection {
   /// Start receiving frames.
   Stream<Float32List> receiveFrames() async* {
     await channel.send(
-      codec.encode(
-        TypedMessage(Command.startFrames.index, null),
-      ),
+      codec.encode(TypedMessage(Command.startFrames.index, null)),
     );
     yield* channel
         .receive()
@@ -63,19 +54,13 @@ class Connection {
   /// Stop receiving frames.
   Future<void> stopFrames() async {
     await channel.send(
-      codec.encode(
-        TypedMessage(Command.stopFrames.index, null),
-      ),
+      codec.encode(TypedMessage(Command.stopFrames.index, null)),
     );
   }
 
   /// Get settings from device.
   Future<SnakeEyeSettings?> get settings async {
-    channel.send(
-      codec.encode(
-        TypedMessage(Command.getSettings.index, null),
-      ),
-    );
+    channel.send(codec.encode(TypedMessage(Command.getSettings.index, null)));
     return channel
         .receive()
         .firstWhere((e) => e.first == Command.getSettings.index)
@@ -85,9 +70,7 @@ class Connection {
   /// Save settings to device.
   Future<void> saveSettings(SnakeEyeSettings settings) async {
     await channel.send(
-      codec.encode(
-        TypedMessage(Command.saveSettings.index, settings),
-      ),
+      codec.encode(TypedMessage(Command.saveSettings.index, settings)),
     );
   }
 }
