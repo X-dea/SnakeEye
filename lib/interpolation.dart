@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Jason C.H.
+// Copyright (C) 2020-2025 Jason C.H.
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -51,7 +51,8 @@ Float32List interpolate(
 
       double v;
       if (sXDiff != 0 && sYDiff != 0) {
-        v = ul * (sX - sXFloor) * (sY - sYFloor) +
+        v =
+            ul * (sX - sXFloor) * (sY - sYFloor) +
             ur * (sXCeil - sX) * (sY - sYFloor) +
             bl * (sX - sXFloor) * (sYCeil - sY) +
             br * (sXCeil - sX) * (sYCeil - sY);
