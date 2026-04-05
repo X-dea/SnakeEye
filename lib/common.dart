@@ -13,10 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import 'dart:ffi';
-
-import 'package:ffi/ffi.dart';
-
 const sensorWidth = 32;
 const sensorHeight = 24;
 const sensorPixels = sensorWidth * sensorHeight;
@@ -26,9 +22,3 @@ const ratio = sensorWidth / sensorHeight;
 const upscaledWidth = 320;
 const upscaledHeight = 240;
 const upscaledPixels = upscaledWidth * upscaledHeight;
-
-final inputTemperatures = malloc.allocate<Uint8>(sensorPixels * 4);
-final outputImage = malloc.allocate<Uint8>(upscaledPixels * 4);
-
-late DynamicLibrary lib;
-late void Function(Pointer<Uint8>, Pointer<Uint8>) processImage;

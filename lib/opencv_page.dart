@@ -14,7 +14,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import 'dart:async';
-import 'dart:ffi' hide Size;
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -23,6 +22,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart' hide Image;
 import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:opencv_dart/opencv.dart' as cv;
 
 import 'common.dart';
 import 'connection.dart';
@@ -50,29 +50,59 @@ class _OpenCVPageState extends State<OpenCVPage> {
   var _cameraScale = 1.0;
 
   void processTemperatures(Float32List temps) async {
-    inputTemperatures
-        .asTypedList(sensorPixels * 4)
-        .buffer
-        .asFloat32List()
-        .setAll(0, temps);
-
-    processImage(inputTemperatures, outputImage);
-    decodeImageFromPixels(
-      outputImage.asTypedList(upscaledPixels * 4),
-      upscaledWidth,
-      upscaledHeight,
-      PixelFormat.bgra8888,
-      (img) {
-        image?.dispose();
-        image = img;
-
-        maxTemp = temps.reduce(max);
-        minTemp = temps.reduce(min);
-        diff = maxTemp - minTemp;
-
-        if (mounted) setState(() {});
-      },
+    final mats = <cv.Mat>[];
+    final input = cv.Mat.fromList(
+      sensorHeight,
+      sensorWidth,
+      cv.MatType.CV_32FC1,
+      temps,
     );
+    mats.add(input);
+    try {
+      final flipped = cv.flip(input, 1);
+      mats.add(flipped);
+      final normalizedDst = cv.Mat.empty();
+      mats.add(normalizedDst);
+      final normalized = cv.normalize(
+        flipped,
+        normalizedDst,
+        alpha: 0,
+        beta: 255,
+        normType: cv.NORM_MINMAX,
+      );
+      final grayscale = normalized.convertTo(cv.MatType.CV_8UC1);
+      mats.add(grayscale);
+      final denoised = cv.fastNlMeansDenoising(grayscale, h: 30);
+      mats.add(denoised);
+      final colored = cv.applyColorMap(denoised, cv.COLORMAP_JET);
+      mats.add(colored);
+      final bgra = cv.cvtColor(colored, cv.COLOR_BGR2BGRA);
+      mats.add(bgra);
+      final resized = cv.resize(bgra, (upscaledWidth, upscaledHeight));
+      mats.add(resized);
+
+      final pixels = Uint8List.fromList(resized.data);
+      decodeImageFromPixels(
+        pixels,
+        upscaledWidth,
+        upscaledHeight,
+        PixelFormat.bgra8888,
+        (img) {
+          image?.dispose();
+          image = img;
+
+          maxTemp = temps.reduce(max);
+          minTemp = temps.reduce(min);
+          diff = maxTemp - minTemp;
+
+          if (mounted) setState(() {});
+        },
+      );
+    } finally {
+      for (final mat in mats.reversed) {
+        mat.dispose();
+      }
+    }
   }
 
   void _initFrames() {

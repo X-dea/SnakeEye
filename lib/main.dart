@@ -10,13 +10,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 
-import 'dart:ffi';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'common.dart';
 import 'connect_page.dart';
 
 void main() {
@@ -25,19 +21,6 @@ void main() {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent),
   );
-
-  // Initialize FFI.
-  if (Platform.isAndroid) {
-    lib = DynamicLibrary.open('libSnakeEye.so');
-  } else {
-    lib = DynamicLibrary.executable();
-  }
-
-  processImage = lib
-      .lookupFunction<
-        Void Function(Pointer<Uint8>, Pointer<Uint8>),
-        void Function(Pointer<Uint8>, Pointer<Uint8>)
-      >('ProcessImage');
 }
 
 class App extends StatelessWidget {

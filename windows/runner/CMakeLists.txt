@@ -1,13 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(runner LANGUAGES CXX)
 
-find_package(OpenCV REQUIRED PATHS ../../third_party/opencv-windows/build/x64/vc16/lib)
-
-file(GLOB ffi_src
-  "../../src/*.hpp"
-  "../../src/*.cpp"
-)
-
 # Define the application target. To change its name, change BINARY_NAME in the
 # top-level CMakeLists.txt, not the value here, or `flutter run` will no longer
 # work.
@@ -21,7 +14,6 @@ add_executable(${BINARY_NAME} WIN32
   "${FLUTTER_MANAGED_DIR}/generated_plugin_registrant.cc"
   "Runner.rc"
   "runner.exe.manifest"
-  ${ffi_src}
 )
 
 # Apply the standard set of build settings. This can be removed for applications
@@ -42,8 +34,7 @@ target_compile_definitions(${BINARY_NAME} PRIVATE "NOMINMAX")
 # dependencies here.
 target_link_libraries(${BINARY_NAME} PRIVATE flutter flutter_wrapper_app)
 target_link_libraries(${BINARY_NAME} PRIVATE "dwmapi.lib")
-target_link_libraries(${BINARY_NAME} PRIVATE ${OpenCV_LIBS})
-target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}" ${OpenCV_INCLUDE_DIRS})
+target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
 
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
